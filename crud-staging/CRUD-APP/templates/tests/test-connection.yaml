@@ -1,0 +1,14 @@
+{{- if .Values.createTestConnectionJob }}
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ include "crud-app.fullname" . }}-test-connection
+spec:
+  template:
+    spec:
+      containers:
+        - name: test-connection
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          command: ["sh", "-c", "echo 'Testing connection....'"]
+      restartPolicy: Never
+{{- end }}
