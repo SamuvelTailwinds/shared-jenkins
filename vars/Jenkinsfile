@@ -13,5 +13,25 @@ pipeline {
                 }
             }
         }
+        stage('SonarQube Analysis') {
+            steps {
+                script {
+                    scanWithSonarQube(envVariable: env.GIT_REPO_URLS, sonarServer: 'SonarQube', sonarProjectKeyPrefix: 'md-')
+                }
+            }
+        }
+        stage('SonarQube Analysis') {
+            steps {
+                script {
+                    scanWithSonarQube(
+                        envVariable: env.GIT_REPO_URLS,
+                        sonarHostUrl: '',
+                        credentialsId: '',
+                        sonarProjectKeyPrefix: 'md-'
+                    )
+                }
+            }
+        }
+
     }
 }
