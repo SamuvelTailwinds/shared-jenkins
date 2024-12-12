@@ -38,10 +38,6 @@ def call(Map params) {
         error "'envVariable' parameter is required and should contain repository URLs separated by commas."
     }
 
-    if (!params.containsKey('sonarHostUrl') || !params.sonarHostUrl) {
-        error "'sonarHostUrl' parameter is required and should specify the SonarQube server URL."
-    }
-
     if (!params.containsKey('credentialsId') || !params.credentialsId) {
         error "'credentialsId' parameter is required and should specify the Jenkins credentials ID for SonarQube."
     }
@@ -59,11 +55,11 @@ def call(Map params) {
 
             dir("workspace/${repoName}") {
                 // Assuming the code is already cloned into workspace/<repoName>
-                withCredentials([string(credentialsId: params.credentialsId, variable: 'SONAR_AUTH_TOKEN')]) {
+                withCredentials([usernamePassword(credentialsId: params.credentialsId, usernameVariable: 'SONAR_URL', passwordVariable: 'SONAR_AUTH_TOKEN')]) {
                     sh "sonar-scanner \
                         -Dsonar.projectKey=${sonarProjectKey} \
                         -Dsonar.sources=. \
-                        -Dsonar.host.url=${params.sonarHostUrl} \
+                        -Dsonar.host.url=\${SONAR_URL} \
                         -Dsonar.login=\${SONAR_AUTH_TOKEN}"
                 }
             }
