@@ -1,0 +1,17 @@
+@Library('md-shared-library') _
+
+pipeline {
+    agent any
+    environment {
+        GIT_REPO_URLS = ''
+    }
+    stages {
+        stage('Clone Repositories') {
+            steps {
+                script {
+                    cloneMultipleRepos(envVariable: env.GIT_REPO_URLS, branch: 'main', credentialsId: 'git-credentials-id', targetDir: 'repos', depth: 1)
+                }
+            }
+        }
+    }
+}

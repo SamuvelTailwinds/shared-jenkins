@@ -1,20 +1,21 @@
 def call(Map params) {
-    if (!params.containsKey('repositories') || !(params.repositories instanceof List)) {
-        error "'repositories' parameter is required and should be a list of maps."
+    if (!params.containsKey('envVariable') || !params.envVariable) {
+        error "'envVariable' parameter is required and should contain repository URLs separated by commas."
     }
 
-    params.repositories.each { repoConfig ->
-        if (!repoConfig.containsKey('repoUrl')) {
-            error "Each repository configuration must have a 'repoUrl'."
-        }
+    def repositories = params.envVariable.split(',').collect { it.trim() }
 
-        String repoUrl = repoConfig.repoUrl
-        String branch = repoConfig.get('branch', 'main')
-        String credentialsId = repoConfig.get('credentialsId', '')
-        String targetDir = repoConfig.get('targetDir', '')
-        int depth = repoConfig.get('depth', 1)
+    stage("Clone Repositories") {
+        repositories.each { repoUrl ->
+            if (!repoUrl) {
+                error "Repository URL cannot be empty."
+            }
 
-        stage("Clone: ${repoUrl}") {
+            String branch = params.get('branch', 'main')
+            String credentialsId = params.get('credentialsId', '')
+            String targetDir = params.get('targetDir', '')
+            int depth = params.get('depth', 1)
+
             checkout([
                 $class: 'GitSCM',
                 branches: [[name: "*/${branch}" ]],
