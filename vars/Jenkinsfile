@@ -3,11 +3,18 @@
 pipeline {
     agent any
     environment {
-        SONAR_CREDENTIAL=''
-        GIT_CREDENTIAL=''
-        GIT_REPO_URLS = ''
-        DOCKER_CREDENTIALS=''
-    }
+        SONAR_CREDENTIAL    =''
+        GIT_CREDENTIAL      =''
+        GIT_REPO_URLS       =''
+        DOCKER_REGISTRY     =''
+        DOCKER_IMAGE_TAG    =''
+        SERVICE_01          =''
+        SERVICE_02          =''
+        SERVICE_03          =''
+        CONTEXT_PATH_01     ='.'
+        CONTEXT_PATH_02     =''
+        CONTEXT_PATH_03     =''    
+        }
     stages {
         stage('Clone Repositories') {
             steps {
@@ -38,8 +45,9 @@ pipeline {
             steps {
                 script {
                     def imageDefinitions = [
-                        [imageName: 'repo/service1', contextPath: './service1', dockerfilePath: 'Dockerfile', buildArgs: ['ARG1=value1']],
-                        [imageName: 'repo/service2', contextPath: './service2', dockerfilePath: 'Dockerfile', buildArgs: ['ARG2=value2']]
+                        [dockerRegistry: env.DOCKER_REGISTRY, imageName: env.SERVICE_01, imageTag: env.DOCKER_IMAGE_TAG, contextPath: env.CONTEXT_PATH_01, dockerfilePath: 'Dockerfile'],
+                        [dockerRegistry: env.DOCKER_REGISTRY, imageName: env.SERVICE_02, imageTag: env.DOCKER_IMAGE_TAG, contextPath: env.CONTEXT_PATH_02, dockerfilePath: 'Dockerfile'],
+                        [dockerRegistry: env.DOCKER_REGISTRY, imageName: env.SERVICE_03, imageTag: env.DOCKER_IMAGE_TAG, contextPath: env.CONTEXT_PATH_03, dockerfilePath: 'Dockerfile'],
                     ]
                     
                     buildDockerImages([

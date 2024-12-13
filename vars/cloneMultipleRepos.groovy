@@ -5,31 +5,29 @@ def call(Map params) {
 
     def repositories = params.envVariable.split(',').collect { it.trim() }
 
-    // stage("Clone Repositories") {
-        repositories.each { repoUrl ->
-            if (!repoUrl) {
-                error "Repository URL cannot be empty."
-            }
+    repositories.each { repoUrl ->
+        if (!repoUrl) {
+            error "Repository URL cannot be empty."
+        }
 
-            String branch = params.get('branch', 'main')
-            String credentialsId = params.get('credentialsId', '')
-            String targetDir = params.get('targetDir', '')
-            int depth = params.get('depth', 1)
+        String branch = params.get('branch', 'main')
+        String credentialsId = params.get('credentialsId', '')
+        String targetDir = params.get('targetDir', '')
+        int depth = params.get('depth', 1)
 
-            checkout([
-                $class: 'GitSCM',
-                branches: [[name: "*/${branch}" ]],
-                doGenerateSubmoduleConfigurations: false,
-                extensions: [
-                    [$class: 'CloneOption', depth: depth, noTags: false, shallow: depth > 0],
-                    [$class: 'RelativeTargetDirectory', relativeTargetDir: targetDir]
-                ],
-                submoduleCfg: [],
-                userRemoteConfigs: [[
-                    url: repoUrl,
-                    credentialsId: credentialsId
-                ]]
-            ])
-        // }
+        checkout([
+            $class: 'GitSCM',
+            branches: [[name: "*/${branch}" ]],
+            doGenerateSubmoduleConfigurations: false,
+            extensions: [
+                [$class: 'CloneOption', depth: depth, noTags: false, shallow: depth > 0],
+                [$class: 'RelativeTargetDirectory', relativeTargetDir: targetDir]
+            ],
+            submoduleCfg: [],
+            userRemoteConfigs: [[
+                url: repoUrl,
+                credentialsId: credentialsId
+            ]]
+        ])
     }
 }

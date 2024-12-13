@@ -44,24 +44,22 @@ def call(Map params) {
 
     def repositories = params.envVariable.split(',').collect { it.trim() }
 
-    // stage("SonarQube Analysis") {
-        repositories.each { repoUrl ->
-            if (!repoUrl) {
-                error "Repository URL cannot be empty."
-            }
+    repositories.each { repoUrl ->
+        if (!repoUrl) {
+            error "Repository URL cannot be empty."
+        }
 
-            def repoName = repoUrl.split('/').last().replace('.git', '')
-            def sonarProjectKey = params.get('sonarProjectKeyPrefix', 'project-') + repoName
+        def repoName = repoUrl.split('/').last().replace('.git', '')
+        def sonarProjectKey = params.get('sonarProjectKeyPrefix', 'project-') + repoName
 
-            dir("workspace/${repoName}") {
-                // Assuming the code is already cloned into workspace/<repoName>
-                withCredentials([usernamePassword(credentialsId: params.credentialsId, usernameVariable: 'SONAR_URL', passwordVariable: 'SONAR_AUTH_TOKEN')]) {
-                    sh "/downloads/sonarqube/sonar-scanner-4.8.0.2856-linux/bin/sonar-scanner \
-                        -Dsonar.projectKey=${sonarProjectKey} \
-                        -Dsonar.sources=. \
-                        -Dsonar.host.url=\${SONAR_URL} \
-                        -Dsonar.login=\${SONAR_AUTH_TOKEN}"
-                // }
+        dir("workspace/${repoName}") {
+            // Assuming the code is already cloned into workspace/<repoName>
+            withCredentials([usernamePassword(credentialsId: params.credentialsId, usernameVariable: 'SONAR_URL', passwordVariable: 'SONAR_AUTH_TOKEN')]) {
+                sh "/downloads/sonarqube/sonar-scanner-4.8.0.2856-linux/bin/sonar-scanner \
+                    -Dsonar.projectKey=${sonarProjectKey} \
+                    -Dsonar.sources=. \
+                    -Dsonar.host.url=\${SONAR_URL} \
+                    -Dsonar.login=\${SONAR_AUTH_TOKEN}"
             }
         }
     }
