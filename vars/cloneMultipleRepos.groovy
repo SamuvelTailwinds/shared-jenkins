@@ -26,7 +26,7 @@ def call(Map params) {
             doGenerateSubmoduleConfigurations: false,
             extensions: [
                 [$class: 'CloneOption', depth: depth, noTags: false, shallow: depth > 0],
-                [$class: 'RelativeTargetDirectory', relativeTargetDir: targetDir]
+                // [$class: 'RelativeTargetDirectory', relativeTargetDir: targetDir]
             ],
             submoduleCfg: [],
             userRemoteConfigs: [[
