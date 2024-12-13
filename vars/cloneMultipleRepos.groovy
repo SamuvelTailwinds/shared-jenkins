@@ -12,8 +12,9 @@ def call(Map params) {
 
         String branch = params.get('branch', 'main')
         String credentialsId = params.get('credentialsId', '')
-        String targetDir = params.get('targetDir', '')
-        int depth = params.get('depth', 1)
+        String depth = params.get('depth', 1)
+        // Generate a unique target directory based on the repository name
+        String targetDir = params.get('targetDir', repoUrl.split('/').last().replace('.git', ''))
 
         checkout([
             $class: 'GitSCM',
