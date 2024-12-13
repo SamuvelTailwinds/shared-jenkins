@@ -5,7 +5,7 @@ def call(Map params) {
 
     def repositories = params.envVariable.split(',').collect { it.trim() }
 
-    stage("Clone Repositories") {
+    // stage("Clone Repositories") {
         repositories.each { repoUrl ->
             if (!repoUrl) {
                 error "Repository URL cannot be empty."
@@ -30,6 +30,6 @@ def call(Map params) {
                     credentialsId: credentialsId
                 ]]
             ])
-        }
+        // }
     }
 }

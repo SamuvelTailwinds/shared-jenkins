@@ -44,7 +44,7 @@ def call(Map params) {
 
     def repositories = params.envVariable.split(',').collect { it.trim() }
 
-    stage("SonarQube Analysis") {
+    // stage("SonarQube Analysis") {
         repositories.each { repoUrl ->
             if (!repoUrl) {
                 error "Repository URL cannot be empty."
@@ -61,7 +61,7 @@ def call(Map params) {
                         -Dsonar.sources=. \
                         -Dsonar.host.url=\${SONAR_URL} \
                         -Dsonar.login=\${SONAR_AUTH_TOKEN}"
-                }
+                // }
             }
         }
     }

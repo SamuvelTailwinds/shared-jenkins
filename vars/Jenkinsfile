@@ -3,13 +3,16 @@
 pipeline {
     agent any
     environment {
+        SONAR_CREDENTIAL=''
+        GIT_CREDENTIAL=''
         GIT_REPO_URLS = ''
+        DOCKER_CREDENTIALS=''
     }
     stages {
         stage('Clone Repositories') {
             steps {
                 script {
-                    cloneMultipleRepos(envVariable: env.GIT_REPO_URLS, branch: 'main', credentialsId: 'git-credentials-id', targetDir: 'repos', depth: 1)
+                    cloneMultipleRepos(envVariable: env.GIT_REPO_URLS, branch: 'main', credentialsId: env.GIT_CREDENTIAL, targetDir: 'repos', depth: 1)
                 }
             }
         }
@@ -25,13 +28,27 @@ pipeline {
                 script {
                     scanWithSonarQube(
                         envVariable: env.GIT_REPO_URLS,
-                        sonarHostUrl: '',
-                        credentialsId: '',
+                        credentialsId: env.SONAR_CREDENTIAL,
                         sonarProjectKeyPrefix: 'md-'
                     )
                 }
             }
         }
+        stage('Build and Push Docker Images') {
+            steps {
+                script {
+                    def imageDefinitions = [
+                        [imageName: 'repo/service1', contextPath: './service1', dockerfilePath: 'Dockerfile', buildArgs: ['ARG1=value1']],
+                        [imageName: 'repo/service2', contextPath: './service2', dockerfilePath: 'Dockerfile', buildArgs: ['ARG2=value2']]
+                    ]
+                    
+                    buildDockerImages([
+                        imageDefinitions: imageDefinitions,
+                        registryCredentialsId: env.DOCKER_CREDENTIALS
 
+                    ])
+                }
+            }
+        }
     }
 }
