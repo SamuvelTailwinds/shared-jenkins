@@ -19,7 +19,7 @@ pipeline {
         stage('Clone Repositories') {
             steps {
                 script {
-                    cloneMultipleRepos(envVariable: env.GIT_REPO_URLS, branch: 'main', credentialsId: env.GIT_CREDENTIAL, targetDir: 'repos', depth: 1)
+                    cloneMultipleRepos(envVariable: env.GIT_REPO_URLS, branch: 'main', credentialsId: env.GIT_CREDENTIAL, depth: 1)
                 }
             }
         }
