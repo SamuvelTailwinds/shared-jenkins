@@ -62,7 +62,7 @@ pipeline {
     post {
         always {
             script {
-                cleanWorkspace(excludePatterns: ['reports', 'logs'], workspaceDir: pwd())
+                cleanWorkspace(excludePatterns: ['reports', 'logs'])
             }
         }
     }
