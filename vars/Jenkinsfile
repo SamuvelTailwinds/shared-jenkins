@@ -42,7 +42,7 @@ pipeline {
                 }
             }
         }
-        stage('Build and Push Docker Images') {
+        stage('Build Docker Images') {
             steps {
                 script {
                     def imageDefinitions = [
@@ -52,6 +52,36 @@ pipeline {
                     ]
                     
                     buildDockerImages([
+                        imageDefinitions: imageDefinitions,
+                        registryCredentialsId: env.DOCKER_CREDENTIALS
+
+                    ])
+                }
+            }
+        }
+        stage('Trivy Scan') {
+            steps {
+                script {
+                    def imageDefinitions = [
+                        [dockerRegistry: env.DOCKER_REGISTRY, imageName: env.SERVICE_01, imageTag: env.DOCKER_IMAGE_TAG, ],
+                        [dockerRegistry: env.DOCKER_REGISTRY, imageName: env.SERVICE_02, imageTag: env.DOCKER_IMAGE_TAG, ],
+                        [dockerRegistry: env.DOCKER_REGISTRY, imageName: env.SERVICE_03, imageTag: env.DOCKER_IMAGE_TAG, ],
+                    ]
+
+                    trivyImageScan(imageDefinitions: imageDefinitions, reportDir: 'trivy-reports')
+                }
+            }
+        }
+        stage('Push Docker Images') {
+            steps {
+                script {
+                    def imageDefinitions = [
+                        [dockerRegistry: env.DOCKER_REGISTRY, imageName: env.SERVICE_01, imageTag: env.DOCKER_IMAGE_TAG, ],
+                        [dockerRegistry: env.DOCKER_REGISTRY, imageName: env.SERVICE_02, imageTag: env.DOCKER_IMAGE_TAG, ],
+                        [dockerRegistry: env.DOCKER_REGISTRY, imageName: env.SERVICE_03, imageTag: env.DOCKER_IMAGE_TAG, ],
+                    ]
+                    
+                    dockerImagesPush([
                         imageDefinitions: imageDefinitions,
                         registryCredentialsId: env.DOCKER_CREDENTIALS
 

@@ -18,22 +18,21 @@ def call(Map params) {
             def dockerRegistry = definition.dockerRegistry
             def baseImageName = definition.imageName
             def IMAGE_TAG = definition.imageTag
-            def contextPath = definition.contextPath
-            def dockerfilePath = definition.get('dockerfilePath', 'Dockerfile')
 
-            if (!baseImageName || !contextPath) {
-                error "Each image definition must have 'imageName' and 'contextPath'."
+            if (!baseImageName) {
+                error "Each image definition must have 'imageName'."
             }
 
             def tag = "${IMAGE_TAG ?: 'latest'}"
             def fullImageName = "${dockerRegistry}/${baseImageName}:${tag}"
 
-            echo "Building image: ${fullImageName} from context: ${contextPath} with Dockerfile: ${dockerfilePath}"
+            echo "Pushing image: ${fullImageName} to dockerhub"
 
             // def buildArgsString = buildArgs.collect { "--build-arg ${it}" }.join(' ')
             sh "docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD"
-            sh "docker build -t ${fullImageName} -f ${contextPath}/${dockerfilePath} ${contextPath}"
 
+            echo "Pushing image: ${fullImageName}"
+            sh "docker push ${fullImageName}"
         }
     }
 }
