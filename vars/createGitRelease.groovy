@@ -29,7 +29,6 @@ def call(Map params = [:]) {
         sh """
             mkdir -p artifacts
             chmod u+w  ${sourcePath}/docker-compose.yaml ${sourcePath}/.env
-            ch  ${sourcePath}/docker-compose.yaml ${sourcePath}/.env
             zip -r artifacts/${releaseTag}-${artifactName} ${sourcePath}/docker-compose.yaml ${sourcePath}/.env
         """
         def artifactPath = "artifacts/${artifactName}"
