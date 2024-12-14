@@ -8,7 +8,7 @@ pipeline {
         GIT_REPO_URLS       =''
         DOCKER_REGISTRY     =''
         DOCKER_IMAGE_TAG    =''
-        CLEANUP_DOCKER_IMAGES='true'
+        CLEANUP_DOCKER_IMAGES=true
         SERVICE_01          =''
         SERVICE_02          =''
         SERVICE_03          =''
@@ -93,6 +93,7 @@ pipeline {
     post {
         always {
             script {
+                archiveArtifacts artifacts: 'trivy-reports/*.json', allowEmptyArchive: true
                 cleanupDockerImages(cleanupImages: env.CLEANUP_DOCKER_IMAGES)
                 cleanWorkspace(excludePatterns: ['reports', 'logs'])
             }
