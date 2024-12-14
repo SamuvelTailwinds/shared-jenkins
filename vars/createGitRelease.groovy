@@ -21,7 +21,8 @@ def call(Map params = [:]) {
         def username = GIT_USERNAME
         def password = GIT_PASSWORD
         def authString = "${username}:${password}"
-    return "Authorization: Basic " + authString.getBytes('UTF-8').encodeBase64().toString()
+        def base64AuthString = Secret.fromString(authString).getEncryptedValue()
+    return "Authorization: Basic " + base64AuthString
     }
 
     try {
