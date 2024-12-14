@@ -7,6 +7,8 @@ pipeline {
         GIT_CREDENTIAL      =''
         GIT_REPO_URLS       =''
         RELEAS_GIT_REPO     =''
+        SOURCE_PATH         =''
+        ARTIFACT_NAME       =''
         DOCKER_REGISTRY     =''
         DOCKER_IMAGE_TAG    =''
         CLEANUP_DOCKER_IMAGES=true

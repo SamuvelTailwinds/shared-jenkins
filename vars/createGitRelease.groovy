@@ -19,10 +19,10 @@ def call(Map params = [:]) {
     def authHeader = "Authorization: token ${withCredentials([string(credentialsId: githubTokenId, variable: 'GITHUB_TOKEN')]) { return GITHUB_TOKEN }}"
 
     try {
-        // Package the artifact
+        // Package the artifact with only specific files (docker-compose and .env)
         sh """
             mkdir -p artifacts
-            zip -r artifacts/${artifactName} ${sourcePath}
+            zip -r artifacts/${releaseTag}-${artifactName} ${sourcePath}/docker-compose ${sourcePath}/.env
         """
         def artifactPath = "artifacts/${artifactName}"
         if (!fileExists(artifactPath)) {
