@@ -31,7 +31,7 @@ def call(Map params = [:]) {
             cp ${sourcePath}/docker-compose.yaml ${sourcePath}/.env artifacts/
             cd artifacts
             chmod 644 docker-compose.yaml .env
-            zip -r ${releaseTag}-${artifactName} docker-compose.yaml .env
+            zip ${releaseTag}-${artifactName} docker-compose.yaml .env
         """
 
         def artifactPath = "artifacts/${releaseTag}-${artifactName}"
