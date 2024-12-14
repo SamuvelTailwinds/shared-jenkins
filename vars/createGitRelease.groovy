@@ -16,14 +16,13 @@ def call(Map params = [:]) {
 
     // GitHub API URLs
     def apiBaseUrl = "https://api.github.com/repos/${gitRepo}"
-    // def authHeader = "Authorization: token ${withCredentials([string(credentialsId: githubTokenId, variable: 'GITHUB_TOKEN')]) { return GITHUB_TOKEN }}"
-    def authHeader
-    withCredentials([usernamePassword(credentialsId: 'md.git', usernameVariable: 'GIT_USERNAME', passwordVariable: 'GIT_PASSWORD')]) {
-        def authString = "${GIT_USERNAME}:${GIT_PASSWORD}"
-        authHeader = "Authorization: Basic " + authString.bytes.encodeBase64().toString()
-    }
-
-    echo "Auth header: ${authHeader}"
+    def authHeader = "Authorization: token ${withCredentials([usernamePassword(credentialsId: githubTokenId, usernameVariable: 'GIT_USERNAME', passwordVariable: 'GIT_PASSWORD')]) { return GIT_PASSWORD }}"
+    // def authHeader
+    // withCredentials([usernamePassword(credentialsId: githubTokenId, usernameVariable: 'GIT_USERNAME', passwordVariable: 'GIT_PASSWORD')]) {
+    //     def authString = "${GIT_USERNAME}:${GIT_PASSWORD}"
+    //     authHeader = "Authorization: Basic " + authString.bytes.encodeBase64().toString()
+    // }
+    // echo "Auth header: ${authHeader}"
 
     try {
         // Package the artifact with only specific files (docker-compose and .env)
