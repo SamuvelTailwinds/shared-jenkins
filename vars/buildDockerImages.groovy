@@ -31,11 +31,11 @@ def call(Map params) {
             echo "Building image: ${fullImageName} from context: ${contextPath} with Dockerfile: ${dockerfilePath}"
 
             // def buildArgsString = buildArgs.collect { "--build-arg ${it}" }.join(' ')
-
+            sh "docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD"
             sh "docker build -t ${fullImageName} -f ${contextPath}/${dockerfilePath} ${contextPath}"
 
-            echo "Pushing image: ${fullImageName}"
-            sh "docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD"
+            // echo "Pushing image: ${fullImageName}"
+            // sh "docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD"
             // sh "docker push ${fullImageName}"
         }
     }
