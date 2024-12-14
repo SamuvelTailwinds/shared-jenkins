@@ -28,7 +28,7 @@ def call(Map params = [:]) {
         // Package the artifact with only specific files (docker-compose and .env)
         sh """
             mkdir -p artifacts
-            ls -l ./navigator-manager/container_builds/
+            chmod u+w  ${sourcePath}
             zip -r artifacts/${releaseTag}-${artifactName} ${sourcePath}/docker-compose.yaml ${sourcePath}/.env
         """
         def artifactPath = "artifacts/${artifactName}"
