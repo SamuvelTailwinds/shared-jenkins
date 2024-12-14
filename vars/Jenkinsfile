@@ -8,6 +8,7 @@ pipeline {
         GIT_REPO_URLS       =''
         DOCKER_REGISTRY     =''
         DOCKER_IMAGE_TAG    =''
+        CLEANUP_DOCKER_IMAGES='true'
         SERVICE_01          =''
         SERVICE_02          =''
         SERVICE_03          =''
@@ -62,6 +63,7 @@ pipeline {
     post {
         always {
             script {
+                cleanupDockerImages(cleanupImages: env.CLEANUP_DOCKER_IMAGES)
                 cleanWorkspace(excludePatterns: ['reports', 'logs'])
             }
         }
