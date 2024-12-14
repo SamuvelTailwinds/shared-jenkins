@@ -28,8 +28,8 @@ def call(Map params = [:]) {
         // Package the artifact with only specific files (docker-compose and .env)
         sh """
             mkdir -p artifacts
-            cp ${sourcePath}/docker-compose.yaml ${sourcePath}/.env artifacts/
             cd artifacts
+            cp ${sourcePath}/docker-compose.yaml ${sourcePath}/.env .
             chmod 644 docker-compose.yaml .env
             zip -r ${releaseTag}-${artifactName} docker-compose.yaml .env
         """
@@ -77,7 +77,7 @@ def call(Map params = [:]) {
         sh """
             curl -X POST -H "${authHeader}" \
             -H "Content-Type: application/zip" \
-            --data-binary @${artifactPath} \
+            --data-binary @${releaseTag}-${artifactName} \
             "https://uploads.github.com/repos/${gitRepo}/releases/${releaseId}/assets?name=artifacts/${releaseTag}-${artifactName}"
         """
 
