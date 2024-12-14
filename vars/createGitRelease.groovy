@@ -20,7 +20,8 @@ def call(Map params = [:]) {
     def authHeader = withCredentials([usernamePassword(credentialsId: githubTokenId, usernameVariable: 'GIT_USERNAME', passwordVariable: 'GIT_PASSWORD')]) {
         def username = GIT_USERNAME
         def password = GIT_PASSWORD
-    return "Authorization: Basic " + "${username}:${password}".getBytes('UTF-8').encodeBase64().toString()
+        def authString = "${username}:${password}"
+    return "Authorization: Basic " + authString.getBytes('UTF-8').encodeBase64().toString()
     }
 
     try {
