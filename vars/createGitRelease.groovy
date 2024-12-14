@@ -30,6 +30,7 @@ def call(Map params = [:]) {
             mkdir -p artifacts
             cp ./navigator-manager/container_builds/docker-compose.yaml ./navigator-manager/container_builds/.env artifacts/
             cd artifacts
+            chmod 644 docker-compose.yaml .env
             zip -r ${releaseTag}-${artifactName} docker-compose.yaml .env
         """
 
@@ -38,7 +39,7 @@ def call(Map params = [:]) {
         //     cp -r ${sourcePath}/docker-compose.yaml ${sourcePath}/.env artifacts/
         //     # zip -r artifacts/${releaseTag}-${artifactName} ${sourcePath}/docker-compose.yaml ${sourcePath}/.env
         // """
-        def artifactPath = "artifacts/${artifactName}"
+        def artifactPath = "artifacts/${releaseTag}-${artifactName}"
         if (!fileExists(artifactPath)) {
             error "Artifact creation failed: ${artifactPath}"
         }
