@@ -28,17 +28,12 @@ def call(Map params = [:]) {
         // Package the artifact with only specific files (docker-compose and .env)
         sh """
             mkdir -p artifacts
-            cp ./navigator-manager/container_builds/docker-compose.yaml ./navigator-manager/container_builds/.env artifacts/
+            cp ${sourcePath}/docker-compose.yaml ${sourcePath}/.env artifacts/
             cd artifacts
             chmod 644 docker-compose.yaml .env
             zip -r ${releaseTag}-${artifactName} docker-compose.yaml .env
         """
 
-        // sh """
-        //     mkdir -p artifacts
-        //     cp -r ${sourcePath}/docker-compose.yaml ${sourcePath}/.env artifacts/
-        //     # zip -r artifacts/${releaseTag}-${artifactName} ${sourcePath}/docker-compose.yaml ${sourcePath}/.env
-        // """
         def artifactPath = "artifacts/${releaseTag}-${artifactName}"
         if (!fileExists(artifactPath)) {
             error "Artifact creation failed: ${artifactPath}"
@@ -83,7 +78,7 @@ def call(Map params = [:]) {
             curl -X POST -H "${authHeader}" \
             -H "Content-Type: application/zip" \
             --data-binary @${artifactPath} \
-            "${apiBaseUrl}/releases/${releaseId}/assets?name=artifacts/${releaseTag}-${artifactName}"
+            "https://uploads.github.com/repos/${gitRepo}/releases/${releaseId}/assets?name=artifacts/${releaseTag}-${artifactName}"
         """
 
         echo "Artifact ${artifactName} uploaded successfully to release ${releaseTag}."
