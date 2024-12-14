@@ -1,5 +1,5 @@
 def call(Map params = [:]) {
-    def excludePatterns = params.get('excludePatterns', ['reports']) // Default exclusion is 'reports'
+    def excludePatterns = params.get('excludePatterns', ['reports'])
     def disableDeferredWipeout = params.get('disableDeferredWipeout', false)
 
     // Convert string patterns into Pattern objects
