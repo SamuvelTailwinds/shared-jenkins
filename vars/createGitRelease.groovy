@@ -83,7 +83,7 @@ def call(Map params = [:]) {
             curl -X POST -H "${authHeader}" \
             -H "Content-Type: application/zip" \
             --data-binary @${artifactPath} \
-            "${apiBaseUrl}/releases/${releaseId}/assets?name=${artifactName}"
+            "${apiBaseUrl}/releases/${releaseId}/assets?name=artifacts/${releaseTag}-${artifactName}"
         """
 
         echo "Artifact ${artifactName} uploaded successfully to release ${releaseTag}."
