@@ -16,7 +16,12 @@ def call(Map params = [:]) {
 
     // GitHub API URLs
     def apiBaseUrl = "https://api.github.com/repos/${gitRepo}"
-    def authHeader = "Authorization: token ${withCredentials([string(credentialsId: githubTokenId, variable: 'GITHUB_TOKEN')]) { return GITHUB_TOKEN }}"
+    // def authHeader = "Authorization: token ${withCredentials([string(credentialsId: githubTokenId, variable: 'GITHUB_TOKEN')]) { return GITHUB_TOKEN }}"
+    def authHeader = withCredentials([usernamePassword(credentialsId: githubTokenId, usernameVariable: 'GIT_USERNAME', passwordVariable: 'GIT_PASSWORD')]) {
+        def username = GIT_USERNAME
+        def password = GIT_PASSWORD
+        return "Authorization: Basic " + "${username}:${password}".bytes.encodeBase64().toString()
+    }
 
     try {
         // Package the artifact with only specific files (docker-compose and .env)

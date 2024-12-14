@@ -95,7 +95,7 @@ pipeline {
         stage('Git Release') {
             steps {
                 script {
-                    createOrUpdateGitRelease(
+                    createGitRelease(
                         gitRepo: env.RELEAS_GIT_REPO,
                         releaseTag: env.DOCKER_IMAGE_TAG,
                         artifactName: env.ARTIFACT_NAME,
