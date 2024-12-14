@@ -28,9 +28,16 @@ def call(Map params = [:]) {
         // Package the artifact with only specific files (docker-compose and .env)
         sh """
             mkdir -p artifacts
-            chmod u+w  ${sourcePath}/docker-compose.yaml ${sourcePath}/.env
-            zip -r artifacts/${releaseTag}-${artifactName} ${sourcePath}/docker-compose.yaml ${sourcePath}/.env
+            cp ./navigator-manager/container_builds/docker-compose.yaml ./navigator-manager/container_builds/.env artifacts/
+            cd artifacts
+            zip -r ${releaseTag}-${artifactName} docker-compose.yaml .env
         """
+
+        // sh """
+        //     mkdir -p artifacts
+        //     cp -r ${sourcePath}/docker-compose.yaml ${sourcePath}/.env artifacts/
+        //     # zip -r artifacts/${releaseTag}-${artifactName} ${sourcePath}/docker-compose.yaml ${sourcePath}/.env
+        // """
         def artifactPath = "artifacts/${artifactName}"
         if (!fileExists(artifactPath)) {
             error "Artifact creation failed: ${artifactPath}"
