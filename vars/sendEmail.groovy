@@ -43,32 +43,76 @@
 //     }
 // }
 
+// def call(Map params) {
+//     if (!params.credentialsId || !params.smtpHost || !params.smtpPort || !params.recipients || !params.subject || !params.body) {
+//         error "Missing required parameters. Ensure 'credentialsId', 'smtpHost', 'smtpPort', 'recipients', 'subject', and 'body' are provided."
+//     }
+
+//     def attachments = params.get('attachments', '')
+
+//     withCredentials([usernamePassword(
+//         credentialsId: params.credentialsId,
+//         usernameVariable: 'SMTP_USERNAME',
+//         passwordVariable: 'SMTP_PASSWORD'
+//     )]) {
+//         emailext(
+//             to: params.recipients,
+//             subject: params.subject,
+//             body: params.body,
+//             mimeType: 'text/html',
+//             attachmentsPattern: attachments,
+//             replyTo: params.get('replyTo', ''),
+//             from: params.get('from', "Jenkins <${SMTP_USERNAME}>"),
+//             smtpServer: params.smtpHost,
+//             smtpPort: params.smtpPort,
+//             authUsername: SMTP_USERNAME,
+//             authPassword: SMTP_PASSWORD,
+//             charset: 'UTF-8',
+//             contentType: 'text/html'
+//         )
+//     }
+// }
+
+import hudson.plugins.emailext.ExtendedEmailPublisherDescriptor
+import jenkins.model.JenkinsLocationConfiguration
+
 def call(Map params) {
-    if (!params.credentialsId || !params.smtpHost || !params.smtpPort || !params.recipients || !params.subject || !params.body) {
-        error "Missing required parameters. Ensure 'credentialsId', 'smtpHost', 'smtpPort', 'recipients', 'subject', and 'body' are provided."
+    if (!params.credentialsId || !params.recipients || !params.subject || !params.body || !params.smtpServer || !params.smtpPort) {
+        error "Missing required parameters. Ensure 'credentialsId', 'recipients', 'subject', 'body', 'smtpServer', and 'smtpPort' are provided."
     }
 
-    def attachments = params.get('attachments', '')
+    def useSsl = params.get('useSsl', true)
+    // def defaultReplyTo = params.get('replyTo', '')
+    def defaultFrom = params.get('from', 'noreply@example.com')
 
+    // Dynamically configure SMTP
+    def emailDescriptor = Jenkins.instance.getDescriptorByType(ExtendedEmailPublisherDescriptor)
+    emailDescriptor.smtpServer = params.smtpServer
+    emailDescriptor.smtpPort = params.smtpPort
+    emailDescriptor.useSsl = useSsl
+    // emailDescriptor.defaultReplyTo = defaultReplyTo
+    emailDescriptor.defaultSuffix = ''
+    emailDescriptor.charset = 'UTF-8'
+
+    JenkinsLocationConfiguration.get().adminAddress = defaultFrom
+
+    // Set credentials for SMTP authentication
     withCredentials([usernamePassword(
         credentialsId: params.credentialsId,
         usernameVariable: 'SMTP_USERNAME',
         passwordVariable: 'SMTP_PASSWORD'
     )]) {
+        emailDescriptor.smtpAuthUsername = SMTP_USERNAME
+        emailDescriptor.smtpAuthPassword = SMTP_PASSWORD
+        emailDescriptor.save()
+
+        // Send email
         emailext(
             to: params.recipients,
             subject: params.subject,
             body: params.body,
-            mimeType: 'text/html',
-            attachmentsPattern: attachments,
-            replyTo: params.get('replyTo', ''),
-            from: params.get('from', "Jenkins <${SMTP_USERNAME}>"),
-            smtpServer: params.smtpHost,
-            smtpPort: params.smtpPort,
-            authUsername: SMTP_USERNAME,
-            authPassword: SMTP_PASSWORD,
-            charset: 'UTF-8',
-            contentType: 'text/html'
+            mimeType: params.get('mimeType', 'text/html'),
+            // attachmentsPattern: params.get('attachments', '')
         )
     }
 }
