@@ -42,7 +42,7 @@ def call(Map params) {
                     
                     # Unzip the artifact
                     sudo mkdir -p /tmp/majordomo
-                    ls -a /temp/majordomo/
+                    ls -a /tmp/majordomo/
                     sudo unzip /tmp/${releaseTag}-docker-compose.zip -d /tmp/majordomo || {
                         echo "Error: Failed to unzip artifact."
                         exit 1
