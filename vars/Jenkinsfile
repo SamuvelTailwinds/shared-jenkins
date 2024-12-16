@@ -116,7 +116,7 @@ pipeline {
         stage('Deploy to vm') {
             steps {
                 script {
-                    deployToUbuntu(targetHost: env.TARGET_HOST, vmCredentials: env.VM_CREDENTIALS_ID, artifactPath: env.ARTIFACT_PATH, registryCredentialsId: env.DOCKER_CREDENTIALS)
+                    deployToUbuntu(registryCredentialsId: env.DOCKER_CREDENTIALS, targetHost: env.TARGET_HOST, vmCredentials: env.VM_CREDENTIALS_ID, artifactPath: env.ARTIFACT_PATH)
                 }
             }
         }
