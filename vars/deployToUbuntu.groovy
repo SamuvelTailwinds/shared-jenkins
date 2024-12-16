@@ -1,8 +1,12 @@
-def deployToUbuntu(String targetHost, String user, String sshKeyPath, String artifactPath) {
+def call(Map params) {
+        def targetHost = params.targetHost
+        def vmCredentials = params.vmCredentials
+        def artifactPath = params.artifactPath
+
     try {
-        withSSHAgent([sshKeyPath]) {
+        withSSHAgent([vmCredentials]) {
             // SCP the artifact to the target machine
-            sh "scp -o StrictHostKeyChecking=no ${artifactPath} ${user}@${targetHost}:/tmp/"
+            sh "scp -o StrictHostKeyChecking=no ${artifactPath} ubuntu@${targetHost}:/tmp/"
 
             // SSH into the target machine to unzip and deploy
             sh """

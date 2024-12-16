@@ -3,22 +3,25 @@
 pipeline {
     agent any
     environment {
-        SONAR_CREDENTIAL    =''
-        GIT_CREDENTIAL      =''
-        GIT_REPO_URLS       =''
-        RELEAS_GIT_REPO     =''
-        SOURCE_PATH         =''
-        ARTIFACT_NAME       =''
-        DOCKER_REGISTRY       =''
-        DOCKER_IMAGE_TAG_1    =''
-        DOCKER_IMAGE_TAG_2    =''
-        CLEANUP_DOCKER_IMAGES =true
-        SERVICE_01          =''
-        SERVICE_02          =''
-        SERVICE_03          =''
-        CONTEXT_PATH_01     ='.'
-        CONTEXT_PATH_02     =''
-        CONTEXT_PATH_03     =''    
+        SONAR_CREDENTIAL        =''
+        GIT_CREDENTIAL          =''
+        GIT_REPO_URLS           =''
+        RELEAS_GIT_REPO         =''
+        SOURCE_PATH             =''
+        ARTIFACT_NAME           =''
+        TARGET_HOST             =''
+        VM_CREDENTIALS_ID       =''
+        ARTIFACT_PATH           =''
+        DOCKER_REGISTRY         =''
+        DOCKER_IMAGE_TAG_1      =''
+        DOCKER_IMAGE_TAG_2      =''
+        CLEANUP_DOCKER_IMAGES   =true //True will remove the docker images in post declarations.
+        SERVICE_01              =''
+        SERVICE_02              =''
+        SERVICE_03              =''
+        CONTEXT_PATH_01         =''
+        CONTEXT_PATH_02         =''
+        CONTEXT_PATH_03         =''    
         }
     stages {
         stage('Clone Repositories') {
@@ -112,7 +115,7 @@ pipeline {
         stage('Deploy to vm') {
             steps {
                 script {
-                    deployToUbuntu("${TARGET_HOST}", "${SSH_USER}", "${SSH_KEY_PATH}", "${ARTIFACT_PATH}")
+                    deployToUbuntu(targetHost: env.TARGET_HOST, vmCredentials: env.VM_CREDENTIALS_ID, artifactPath: env.ARTIFACT_PATH)
                 }
             }
         }
