@@ -3,6 +3,11 @@
 pipeline {
     agent any
     environment {
+        EMAIL_CREDENTIALS_ID = 'email-smtp-credentials' 
+        EMAIL_RECIPIENTS = ''           
+        SMTP_HOST = 'smtp.example.com'                 // SMTP host (e.g., Gmail: smtp.gmail.com)
+        SMTP_PORT = '465'                              // SMTP port (587 for TLS, 465 for SSL)
+
         SONAR_CREDENTIAL        =''
         GIT_CREDENTIAL          =''
         GIT_REPO_URLS           =''
@@ -125,6 +130,20 @@ pipeline {
         always {
             script {
                 archiveArtifacts artifacts: 'trivy-reports/*.json', allowEmptyArchive: true
+                // Send email
+                sendEmail(
+                    smtpHost: SMTP_HOST,
+                    smtpPort: SMTP_PORT,
+                    credentialsId: EMAIL_CREDENTIALS_ID,
+                    recipients: EMAIL_RECIPIENTS,
+                    subject: "Build #${env.BUILD_NUMBER} Completed",
+                    body: """
+                        <p>Hello Team,</p>
+                        <p>The build #${env.BUILD_NUMBER} for ${env.JOB_NAME} has completed successfully.</p>
+                        <p>Please find the attached report for details.</p>
+                    """,
+                    attachments: "./artifacts/${env.DOCKER_IMAGE_TAG_1}-docker-compose.zip"
+                )
                 cleanupDockerImages(cleanupImages: env.CLEANUP_DOCKER_IMAGES)
                 cleanWorkspace(excludePatterns: ['reports', 'logs'])
             }
