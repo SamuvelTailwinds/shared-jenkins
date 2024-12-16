@@ -1,8 +1,17 @@
 def call(Map params) {
+    if (!params.containsKey('registryCredentialsId') || !params.registryCredentialsId) {
+        error "'registryCredentialsId' parameter is required and should specify the Jenkins credentials ID for the Docker registry."
+    }
+
     def targetHost = params.targetHost
     def vmCredentials = params.vmCredentials
     def artifactPath = params.artifactPath
-    def dockerRegistry = params.DOCKER_REGISTRY
+
+    withCredentials([usernamePassword(
+        credentialsId: params.registryCredentialsId,
+        usernameVariable: 'DOCKER_USERNAME',
+        passwordVariable: 'DOCKER_PASSWORD'
+    )])
 
     try {
         withSSHAgent([vmCredentials]) {
@@ -21,6 +30,9 @@ def call(Map params) {
 
                 # Update .env file
                 sed -i "s|DOCKER_REGISTRY=.*|DOCKER_REGISTRY=${dockerRegistry}|" .env
+                
+                #docker login 
+                docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
 
                 # Start docker-compose
                 docker-compose up -d
