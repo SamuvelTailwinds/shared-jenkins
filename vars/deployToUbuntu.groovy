@@ -51,7 +51,7 @@ def call(Map params) {
                     cd /tmp/majordomo
 
                     # Update .env file
-                    sed -i "s|HOST_NAME=.*|HOST_NAME=${targetHost}|" .env || {
+                    sudo sed -i "s|HOST_NAME=.*|HOST_NAME=${targetHost}|" .env || {
                         echo "Error: Failed to update .env file."
                         exit 1
                     }

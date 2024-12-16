@@ -125,6 +125,18 @@ pipeline {
                 }
             }
         }
+        stage('Run Selenium Tests') {
+            steps {
+                echo 'Running Selenium tests...'
+                runTests(
+                    testDir: "${env.TEST_DIR}",
+                    resultsDir: "${env.RESULTS_DIR}",
+                    browser: "${env.BROWSER}",
+                    additionalArgs: "${env.ADDITIONAL_ARGS}"
+                )
+            }
+        }
+
     }
     post {
         always {
