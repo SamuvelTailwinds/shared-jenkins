@@ -130,19 +130,11 @@ pipeline {
         always {
             script {
                 archiveArtifacts artifacts: 'trivy-reports/*.json', allowEmptyArchive: true
-                // Send email
-                sendEmail(
-                    smtpHost: SMTP_HOST,
-                    smtpPort: SMTP_PORT,
-                    credentialsId: EMAIL_CREDENTIALS_ID,
-                    recipients: EMAIL_RECIPIENTS,
-                    subject: "Build #${env.BUILD_NUMBER} Completed",
-                    body: """
-                        <p>Hello Team,</p>
-                        <p>The build #${env.BUILD_NUMBER} for ${env.JOB_NAME} has completed successfully.</p>
-                        <p>Please find the attached report for details.</p>
-                    """,
-                    attachments: "./artifacts/${env.DOCKER_IMAGE_TAG_1}-docker-compose.zip"
+                sendEmailWithAttachment(
+                    recipients: 'team@example.com',
+                    subject: "Build #${env.BUILD_NUMBER} Status",
+                    body: """<p>The build has completed. Please find the attached reports.</p>""",
+                    attachments: ['reports/*.json']
                 )
                 cleanupDockerImages(cleanupImages: env.CLEANUP_DOCKER_IMAGES)
                 cleanWorkspace(excludePatterns: ['reports', 'logs'])
