@@ -13,7 +13,7 @@ def call(Map params) {
             usernameVariable: 'DOCKER_USERNAME',
             passwordVariable: 'DOCKER_PASSWORD'
         )]) {
-            withSSHAgent([vmCredentials]) {
+            sshagent(credentials: ([vmCredentials])) {
                 sh """
                     # Copy artifact to target VM
                     scp -o StrictHostKeyChecking=no ${artifactPath} ubuntu@${targetHost}:/tmp/
