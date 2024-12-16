@@ -18,6 +18,7 @@ def call(Map params) {
     def targetHost = params.targetHost
     def vmCredentials = params.vmCredentials
     def artifactPath = params.artifactPath
+    def releaseTag = params.releaseTag
 
     try {
         withCredentials([usernamePassword(
@@ -41,7 +42,7 @@ def call(Map params) {
                     
                     # Unzip the artifact
                     mkdir -p /tmp/majordomo
-                    unzip /tmp/*-docker-compose.zip -d /tmp/majordomo || {
+                    unzip /tmp/${releaseTag}-docker-compose.zip -d /tmp/majordomo || {
                         echo "Error: Failed to unzip artifact."
                         exit 1
                     }
