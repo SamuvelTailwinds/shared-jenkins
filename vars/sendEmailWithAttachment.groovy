@@ -1,11 +1,3 @@
-/**
- * Sends an email with an attachment using the Extended Email Plugin.
- *
- * @param recipients   Comma-separated list of email addresses
- * @param subject      Subject of the email
- * @param body         Body content of the email
- * @param attachments  List of file paths to attach (relative to workspace)
- */
 def call(Map params) {
     def recipients = params.get('recipients', '')
     def subject = params.get('subject', 'Build Notification')

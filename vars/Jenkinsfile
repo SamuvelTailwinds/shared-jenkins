@@ -3,12 +3,12 @@
 pipeline {
     agent any
     environment {
-        EMAIL_CREDENTIALS_ID = 'email-smtp-credentials' 
-        EMAIL_RECIPIENTS = ''           
-        SMTP_HOST = 'smtp.example.com'                 // SMTP host (e.g., Gmail: smtp.gmail.com)
-        SMTP_PORT = '465'                              // SMTP port (587 for TLS, 465 for SSL)
+        EMAIL_CREDENTIALS_ID     = '' 
+        EMAIL_RECIPIENTS         = ''           
+        SMTP_HOST                = 'smtp.gmail.com'                 // SMTP host (e.g., Gmail: smtp.gmail.com)
+        SMTP_PORT                = '465'                              // SMTP port (587 for TLS, 465 for SSL)
 
-        SONAR_CREDENTIAL        =''
+        SONAR_CREDENTIAL         =''
         GIT_CREDENTIAL          =''
         GIT_REPO_URLS           =''
         RELEAS_GIT_REPO         =''
@@ -43,6 +43,7 @@ pipeline {
             }
             steps {
                 script {
+                    def basePath ='./navigator-manager/container_builds/'
                     def commands = []
                     
                     // Add .env file updates based on TARGET_CUSTOMER
@@ -57,11 +58,16 @@ pipeline {
                     commands.add("cd ./navigator-manager && go build -o bin/tailwinds-lgen github.com/tailwinds/navigator/pkg/license")
                     commands.add("cd ./navigator-manager/bin && ./tailwinds-lgen admin@tailwinds.ai 120")
                     commands.add("cd ./navigator-manager && go build -o bin/navigator-manager github.com/tailwinds/navigator/cmd/startup")
-                    commands.add("cd ./majordomo_sse && go build -o bin/majordomo-sse main.go")
-                    commands.add("cp ./majordomo_sse/bin/majordomo-sse ../bin")
-
+                    commands.add("cd ./majordomo-sse && go build -o bin/majordomo-sse main.go")
+                    commands.add("cp ./majordomo-sse/bin/majordomo-sse ../bin")
+                    // npm install for nginx/ui image
+                    commands.add("cd ./navigator-ui && npm i --force")
+                    commands.add("cd ./navigator-ui && npm run build --force")
+                    commands.add("cp -r ./navigator-ui/dist dist")
+                    commands.add("cp -r ./navigator-ui/nginx nginx")
+                    
                     // Run all the commands using shared library
-                    envUpdate(commands)
+                    envUpdate(basePath, commands)
                 }
             }
         }
@@ -133,7 +139,7 @@ pipeline {
                         artifactName: env.ARTIFACT_NAME,
                         sourcePath: env.SOURCE_PATH,
                         githubTokenId: env.GIT_CREDENTIAL,
-                        releaseName: 'My Release',
+                        releaseName: 'MajorDomo $DOCKER_IMAGE_TAG_1',
                         releaseDescription: 'This is the release description'
                     )
                 }
