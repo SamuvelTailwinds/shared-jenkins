@@ -48,10 +48,10 @@ pipeline {
                     binaryOutputPath: 'bin',
                     goProjects: [
                         [
-                            projectPath: './navigator-manager',
+                            projectPath: './navigator-manager/container_builds/',
                             binaryName: 'tailwinds-lgen',
                             buildCommand: 'cd .. && go build -o bin/tailwinds-lgen github.com/tailwinds/navigator/pkg/license',
-                            postCommand: 'cd bin && ./tailwinds-lgen  120'
+                            postCommand: 'cd bin && ./tailwinds-lgen admin@tailwinds.ai 120'
                         ],
                         [
                             projectPath: './navigator-manager',
