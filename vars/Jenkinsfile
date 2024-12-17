@@ -37,6 +37,37 @@ pipeline {
                 }
             }
         }
+        stage('Update .env and Build Binaries') {
+            when {
+                expression { return params.SELECT_IMAGES.contains('majordomo_nginx') || params.SELECT_IMAGES.contains('All') } 
+            }
+            steps {
+                updateEnvAndBuildBinaries(
+                    targetCustomer: params.TARGET_CUSTOMER,
+                    envFilePath: './navigator-ui/.env',
+                    binaryOutputPath: 'bin',
+                    goProjects: [
+                        [
+                            projectPath: './navigator-manager',
+                            binaryName: 'tailwinds-lgen',
+                            buildCommand: 'cd .. && go build -o bin/tailwinds-lgen github.com/tailwinds/navigator/pkg/license',
+                            postCommand: 'cd bin && ./tailwinds-lgen  120'
+                        ],
+                        [
+                            projectPath: './navigator-manager',
+                            binaryName: 'navigator-manager',
+                            buildCommand: 'cd .. && go build -o bin/navigator-manager github.com/tailwinds/navigator/cmd/startup'
+                        ],
+                        [
+                            projectPath: './majordomo-sse',
+                            binaryName: 'majordomo-sse',
+                            buildCommand: 'cd ../../majordomo-sse && go build -o bin/majordomo-sse main.go'
+                            ]
+                        ]
+                    )
+                }
+            }
+        }
         stage('SonarQube Analysis') {
             steps {
                 script {
