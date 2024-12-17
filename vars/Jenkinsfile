@@ -37,41 +37,31 @@ pipeline {
                 }
             }
         }
-        stage('Update .env and Build Binaries') {
+        stage('Run Commands') {
             when {
-                expression { return params.SELECT_IMAGES.contains('majordomo_nginx') || params.SELECT_IMAGES.contains('All') } 
+                expression { return params.SELECT_IMAGES.contains('majordomo_nginx') || params.SELECT_IMAGES.contains('All') }
             }
-            steps {
-                updateEnvAndBuildBinaries(
-                    targetCustomer: params.TARGET_CUSTOMER,
-                    envFilePath: './navigator-ui/.env',
-                    binaryOutputPath: 'bin',
-                    goProjects: [
-                        [
-                            projectPath: './navigator-manager/container_builds/',
-                            binaryName: 'tailwinds-lgen',
-                            buildCommand: 'cd .. && go build -o bin/tailwinds-lgen github.com/tailwinds/navigator/pkg/license',
-                            postCommand: 'cd bin && ./tailwinds-lgen admin@tailwinds.ai 120'
-                        ],
-                        [
-                            projectPath: './navigator-manager',
-                            binaryName: 'navigator-manager',
-                            buildCommand: 'cd .. && go build -o bin/navigator-manager github.com/tailwinds/navigator/cmd/startup'
-                        ],
-                        [
-                            projectPath: './majordomo-sse',
-                            binaryName: 'majordomo-sse',
-                            buildCommand: 'cd ../../majordomo-sse && go build -o bin/majordomo-sse main.go'
-                            ]
-                        ]
-                    )
-                }
-            }
-        }
-        stage('SonarQube Analysis') {
             steps {
                 script {
-                    scanWithSonarQube(envVariable: env.GIT_REPO_URLS, sonarServer: 'SonarQube', sonarProjectKeyPrefix: 'md-')
+                    def commands = []
+                    
+                    // Add .env file updates based on TARGET_CUSTOMER
+                    if (params.TARGET_CUSTOMER == 'Tailwinds') {
+                        commands.add("echo '# Tailwinds\nREACT_APP_MAJORDOMO=Majordomo\nREACT_APP_IMG=./images/taiwindicon.png\nREACT_APP_TITLE=Tailwinds' > navigator-ui/.env")
+                    } else if (params.TARGET_CUSTOMER == 'IFF') {
+                        commands.add("echo '# IFF\nREACT_APP_MAJORDOMO=Cloud Conductor\nREACT_APP_IMG=./images/iff.png\nREACT_APP_TITLE=Cloud Conductor' > navigator-ui/.env")
+                    }
+                    commands.add("cat ./navigator-manager/container_builds/")
+                    commands.add("pwd")
+                    // Add Go binary build commands
+                    commands.add("cd ./navigator-manager && go build -o bin/tailwinds-lgen github.com/tailwinds/navigator/pkg/license")
+                    commands.add("cd ./navigator-manager/bin && ./tailwinds-lgen admin@tailwinds.ai 120")
+                    commands.add("cd ./navigator-manager && go build -o bin/navigator-manager github.com/tailwinds/navigator/cmd/startup")
+                    commands.add("cd ./majordomo_sse && go build -o bin/majordomo-sse main.go")
+                    commands.add("cp ./majordomo_sse/bin/majordomo-sse ../bin")
+
+                    // Run all the commands using shared library
+                    envUpdate(commands)
                 }
             }
         }
