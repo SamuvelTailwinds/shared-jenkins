@@ -7,12 +7,12 @@ def call(Map params) {
         error "'credentialsId' parameter is required and should specify the Jenkins credentials ID for SonarQube."
     }
 
-    if (!params.sonarHostUrl('sonarHostUrl') || !params.sonarHostUrl) {
+    if (!params.containsKey('sonarHostUrl') || !params.sonarHostUrl) {
         error "'sonarHostUrl' parameter is required and should specify Host Url  for SonarQube."
     }
 
     def repositories = params.envVariable.split(',').collect { it.trim() }
-    def sonarHostUrl = params.sonarHostUrl
+    def sonarUrl = params.sonarHostUrl
     repositories.each { repoUrl ->
         if (!repoUrl) {
             error "Repository URL cannot be empty."
@@ -27,7 +27,7 @@ def call(Map params) {
                 sh "/downloads/sonarqube/sonar-scanner-4.8.0.2856-linux/bin/sonar-scanner \
                     -Dsonar.projectKey=${sonarProjectKey} \
                     -Dsonar.sources=. \
-                    -Dsonar.host.url=${sonarHostUrl} \
+                    -Dsonar.host.url=${sonarUrl} \
                     -Dsonar.login=\${SONAR_AUTH_TOKEN}"
             }
         }
