@@ -1,10 +1,15 @@
-def call(List commands) {
-    if (!commands || !(commands instanceof List)) {
-        error "'commands' parameter is required and must be a list of shell commands."
+def call(Map params) {
+    if (!params.containsKey('commands') || !(params.commands instanceof List)) {
+        error "'commands' parameter is required and should be a list of commands."
+    }
+    if (!params.containsKey('basePath') || !params.basePath) {
+        error "'basePath' parameter is required to specify the working directory."
     }
 
-    commands.each { cmd ->
-        echo "Executing command: ${cmd}"
-        sh "${cmd}"
+    dir(params.basePath) {
+        params.commands.each { command ->
+            echo "Executing command: ${command}"
+            sh command
+        }
     }
 }

@@ -7,7 +7,7 @@ pipeline {
         EMAIL_RECIPIENTS         = ''           
         SMTP_HOST                = 'smtp.gmail.com'                 // SMTP host (e.g., Gmail: smtp.gmail.com)
         SMTP_PORT                = '465'                              // SMTP port (587 for TLS, 465 for SSL)
-
+        BASE_PATH                ='./navigator-manager/container_builds/'
         SONAR_CREDENTIAL         =''
         GIT_CREDENTIAL          =''
         GIT_REPO_URLS           =''
@@ -37,37 +37,21 @@ pipeline {
                 }
             }
         }
-        stage('Run Commands') {
-            when {
-                expression { return params.SELECT_IMAGES.contains('majordomo_nginx') || params.SELECT_IMAGES.contains('All') }
-            }
+        stage('.env Update') {
             steps {
                 script {
-                    def basePath ='./navigator-manager/container_builds/'
-                    def commands = []
-                    
-                    // Add .env file updates based on TARGET_CUSTOMER
-                    if (params.TARGET_CUSTOMER == 'Tailwinds') {
-                        commands.add("echo '# Tailwinds\nREACT_APP_MAJORDOMO=Majordomo\nREACT_APP_IMG=./images/taiwindicon.png\nREACT_APP_TITLE=Tailwinds' > navigator-ui/.env")
-                    } else if (params.TARGET_CUSTOMER == 'IFF') {
-                        commands.add("echo '# IFF\nREACT_APP_MAJORDOMO=Cloud Conductor\nREACT_APP_IMG=./images/iff.png\nREACT_APP_TITLE=Cloud Conductor' > navigator-ui/.env")
-                    }
-                    commands.add("cat ./navigator-manager/container_builds/")
-                    commands.add("pwd")
-                    // Add Go binary build commands
-                    commands.add("cd ./navigator-manager && go build -o bin/tailwinds-lgen github.com/tailwinds/navigator/pkg/license")
-                    commands.add("cd ./navigator-manager/bin && ./tailwinds-lgen admin@tailwinds.ai 120")
-                    commands.add("cd ./navigator-manager && go build -o bin/navigator-manager github.com/tailwinds/navigator/cmd/startup")
-                    commands.add("cd ./majordomo-sse && go build -o bin/majordomo-sse main.go")
-                    commands.add("cp ./majordomo-sse/bin/majordomo-sse ../bin")
-                    // npm install for nginx/ui image
-                    commands.add("cd ./navigator-ui && npm i --force")
-                    commands.add("cd ./navigator-ui && npm run build --force")
-                    commands.add("cp -r ./navigator-ui/dist dist")
-                    commands.add("cp -r ./navigator-ui/nginx nginx")
-                    
-                    // Run all the commands using shared library
-                    envUpdate(basePath, commands)
+                    def commandSet = [
+                        "cd .. && go build -o bin/tailwinds-lgen github.com/tailwinds/navigator/pkg/license",
+                        "cd ../bin && ./tailwinds-lgen admin@tailwinds.ai 120",
+                        "cd .. && go build -o bin/navigator-manager github.com/tailwinds/navigator/cmd/startup",
+                        "cd ../../majordomo-sse && go build -o bin/majordomo-sse main.go",
+                        "cp ../../majordomo-sse/bin/majordomo-sse ../bin"
+                    ]
+
+                    envUpdate(
+                        basePath: params.BASE_PATH,
+                        commands: commandSet
+                    )
                 }
             }
         }
