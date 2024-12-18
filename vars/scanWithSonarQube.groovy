@@ -21,16 +21,16 @@ def call(Map params) {
         def repoName = repoUrl.split('/').last().replace('.git', '')
         def sonarProjectKey = params.get('sonarProjectKeyPrefix', 'project-') + repoName
 
-        // dir("workspace/${repoName}") {
+        dir("workspace/${repoName}/") {
             sh'ls -a'
             // Assuming the code is already cloned into workspace/<repoName>   
             withCredentials([usernamePassword(credentialsId: params.credentialsId, usernameVariable: 'SONAR_URL', passwordVariable: 'SONAR_AUTH_TOKEN')]) {
                 sh "/downloads/sonarqube/sonar-scanner-6.2.1.4610-linux-x64/bin/sonar-scanner \
                     -Dsonar.projectKey=${sonarProjectKey} \
-                    -Dsonar.sources=./${repoName} \
+                    -Dsonar.sources=. \
                     -Dsonar.host.url=${sonarUrl} \
                     -Dsonar.login=\${SONAR_AUTH_TOKEN}"
-            // }
+            }
         }
     }
 }
