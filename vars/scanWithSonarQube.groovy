@@ -12,7 +12,7 @@ def call(Map params) {
     }
 
     def repositories = params.envVariable.split(',').collect { it.trim() }
-
+    def sonarHostUrl = params.sonarHostUrl
     repositories.each { repoUrl ->
         if (!repoUrl) {
             error "Repository URL cannot be empty."
