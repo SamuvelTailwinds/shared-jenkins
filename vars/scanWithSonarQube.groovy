@@ -24,7 +24,7 @@ def call(Map params) {
         dir("workspace/${repoName}") {
             // Assuming the code is already cloned into workspace/<repoName>   
             withCredentials([usernamePassword(credentialsId: params.credentialsId, usernameVariable: 'SONAR_URL', passwordVariable: 'SONAR_AUTH_TOKEN')]) {
-                sh "/downloads/sonarqube/sonar-scanner-6.2.1.4610-linux/bin/sonar-scanner \
+                sh "/downloads/sonarqube/sonar-scanner-6.2.1.4610-linux-x64/bin/sonar-scanner \
                     -Dsonar.projectKey=${sonarProjectKey} \
                     -Dsonar.sources=. \
                     -Dsonar.host.url=${sonarUrl} \
