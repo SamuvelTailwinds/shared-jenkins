@@ -30,6 +30,7 @@ def call(Map params) {
                     -Dsonar.sources=. \
                     -Dsonar.host.url=${sonarUrl} \
                     -Dsonar.login=\${SONAR_AUTH_TOKEN}"
+                sh "curl -u ${SONAR_AUTH_TOKEN}: "${sonarUrl}/api/issues/search?componentKeys=${sonarProjectKey}&severities=BLOCKER,CRITICAL,MAJOR,MINOR,INFO&s=SEVERITY&asc=false&ps=100" -o ${sonarProjectKey}.json"
             }
         }
     }
