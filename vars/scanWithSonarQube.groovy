@@ -21,7 +21,7 @@ def call(Map params) {
         def repoName = repoUrl.split('/').last().replace('.git', '')
         def sonarProjectKey = params.get('sonarProjectKeyPrefix', 'project-') + repoName
 
-        dir("workspace/${repoName}/") {
+        dir("./${repoName}/") {
             sh'ls -a'
             // Assuming the code is already cloned into workspace/<repoName>   
             withCredentials([usernamePassword(credentialsId: params.credentialsId, usernameVariable: 'SONAR_URL', passwordVariable: 'SONAR_AUTH_TOKEN')]) {
