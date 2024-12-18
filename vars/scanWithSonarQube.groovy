@@ -1,3 +1,42 @@
+// def call(Map params) {
+//     if (!params.containsKey('envVariable') || !params.envVariable) {
+//         error "'envVariable' parameter is required and should contain repository URLs separated by commas."
+//     }
+
+//     if (!params.containsKey('credentialsId') || !params.credentialsId) {
+//         error "'credentialsId' parameter is required and should specify the Jenkins credentials ID for SonarQube."
+//     }
+
+//     if (!params.containsKey('sonarHostUrl') || !params.sonarHostUrl) {
+//         error "'sonarHostUrl' parameter is required and should specify Host Url  for SonarQube."
+//     }
+
+//     def repositories = params.envVariable.split(',').collect { it.trim() }
+//     def sonarUrl = params.sonarHostUrl
+//     repositories.each { repoUrl ->
+//         if (!repoUrl) {
+//             error "Repository URL cannot be empty."
+//         }
+
+//         def repoName = repoUrl.split('/').last().replace('.git', '')
+//         def sonarProjectKey = params.get('sonarProjectKeyPrefix', 'project-') + repoName
+
+//         dir("./${repoName}/") {
+//             sh'ls -a'
+//             // Assuming the code is already cloned into workspace/<repoName>   
+//             withCredentials([usernamePassword(credentialsId: params.credentialsId, usernameVariable: 'SONAR_URL', passwordVariable: 'SONAR_AUTH_TOKEN')]) {
+//                 sh "/downloads/sonarqube/sonar-scanner-6.2.1.4610-linux-x64/bin/sonar-scanner \
+//                     -Dsonar.projectKey=${sonarProjectKey} \
+//                     -Dsonar.sources=. \
+//                     -Dsonar.host.url=${sonarUrl} \
+//                     -Dsonar.login=\${SONAR_AUTH_TOKEN}"
+//                 // sh "curl -u ${SONAR_AUTH_TOKEN}: "${sonarUrl}/api/issues/search?componentKeys=${sonarProjectKey}&severities=BLOCKER,CRITICAL,MAJOR,MINOR,INFO&s=SEVERITY&asc=false&ps=100" -o ${sonarProjectKey}.json"
+//             }
+//         }
+//     }
+// }
+
+
 def call(Map params) {
     if (!params.containsKey('envVariable') || !params.envVariable) {
         error "'envVariable' parameter is required and should contain repository URLs separated by commas."
@@ -8,11 +47,12 @@ def call(Map params) {
     }
 
     if (!params.containsKey('sonarHostUrl') || !params.sonarHostUrl) {
-        error "'sonarHostUrl' parameter is required and should specify Host Url  for SonarQube."
+        error "'sonarHostUrl' parameter is required and should specify Host Url for SonarQube."
     }
 
     def repositories = params.envVariable.split(',').collect { it.trim() }
     def sonarUrl = params.sonarHostUrl
+
     repositories.each { repoUrl ->
         if (!repoUrl) {
             error "Repository URL cannot be empty."
@@ -22,15 +62,24 @@ def call(Map params) {
         def sonarProjectKey = params.get('sonarProjectKeyPrefix', 'project-') + repoName
 
         dir("./${repoName}/") {
-            sh'ls -a'
-            // Assuming the code is already cloned into workspace/<repoName>   
+            sh 'ls -a'
+            // Assuming the code is already cloned into workspace/<repoName>
             withCredentials([usernamePassword(credentialsId: params.credentialsId, usernameVariable: 'SONAR_URL', passwordVariable: 'SONAR_AUTH_TOKEN')]) {
+                // Run SonarQube analysis
                 sh "/downloads/sonarqube/sonar-scanner-6.2.1.4610-linux-x64/bin/sonar-scanner \
                     -Dsonar.projectKey=${sonarProjectKey} \
                     -Dsonar.sources=. \
                     -Dsonar.host.url=${sonarUrl} \
                     -Dsonar.login=\${SONAR_AUTH_TOKEN}"
-                // sh "curl -u ${SONAR_AUTH_TOKEN}: "${sonarUrl}/api/issues/search?componentKeys=${sonarProjectKey}&severities=BLOCKER,CRITICAL,MAJOR,MINOR,INFO&s=SEVERITY&asc=false&ps=100" -o ${sonarProjectKey}.json"
+
+                // Fetch the SonarQube report
+                def reportDir = "${env.WORKSPACE}/sonar-report"
+                sh "mkdir -p ${reportDir}"
+                sh """
+                    curl -s -u \${SONAR_AUTH_TOKEN}: \
+                    "${sonarUrl}/api/issues/search?componentKeys=${sonarProjectKey}&severities=BLOCKER,CRITICAL,MAJOR,MINOR,INFO&s=SEVERITY&asc=false&ps=100" \
+                    -o ${reportDir}/${repoName}.json
+                """
             }
         }
     }
