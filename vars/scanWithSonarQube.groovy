@@ -7,7 +7,7 @@ def call(Map params) {
         error "'credentialsId' parameter is required and should specify the Jenkins credentials ID for SonarQube."
     }
 
-    if (!params.sonarHostUrl('credentialsId') || !params.sonarHostUrl) {
+    if (!params.sonarHostUrl('sonarHostUrl') || !params.sonarHostUrl) {
         error "'sonarHostUrl' parameter is required and should specify Host Url  for SonarQube."
     }
 
