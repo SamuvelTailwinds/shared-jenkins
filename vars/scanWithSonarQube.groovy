@@ -22,7 +22,7 @@ def call(Map params) {
             withCredentials([usernamePassword(credentialsId: params.credentialsId, usernameVariable: 'SONAR_URL', passwordVariable: 'SONAR_AUTH_TOKEN')]) {
                 sh "/downloads/sonarqube/sonar-scanner-4.8.0.2856-linux/bin/sonar-scanner \
                     -Dsonar.projectKey=${sonarProjectKey} \
-                    -Dsonar.sources=. \
+                    -Dsonar.sources=./${repoName} \
                     -Dsonar.host.url=\${SONAR_URL} \
                     -Dsonar.login=\${SONAR_AUTH_TOKEN}"
             }
