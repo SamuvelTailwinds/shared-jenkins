@@ -11,6 +11,7 @@ pipeline {
         SONAR_CREDENTIAL         =''
         GIT_CREDENTIAL          =''
         GIT_REPO_URLS           =''
+        GIT_BRANCH              ='main'
         RELEAS_GIT_REPO         =''
         SOURCE_PATH             =''
         ARTIFACT_NAME           =''
@@ -33,13 +34,19 @@ pipeline {
         stage('Clone Repositories') {
             steps {
                 script {
-                    cloneMultipleRepos(envVariable: env.GIT_REPO_URLS, branch: 'main', credentialsId: env.GIT_CREDENTIAL, depth: 1)
+                    cloneMultipleRepos(envVariable: env.GIT_REPO_URLS, branch: env.GIT_BRANCH, credentialsId: env.GIT_CREDENTIAL, depth: 1)
                 }
             }
         }
         stage('.env Update') {
             steps {
                 script {
+                    // Add .env file updates based on TARGET_CUSTOMER
+                    if ('IFF' == 'Tailwinds') {
+                        sh"echo '# Tailwinds\nREACT_APP_MAJORDOMO=Majordomo\nREACT_APP_IMG=./images/taiwindicon.png\nREACT_APP_TITLE=Tailwinds' > navigator-ui/.env"
+                    } else if ('IFF' == 'IFF') {
+                        sh"echo '# IFF\nREACT_APP_MAJORDOMO=Cloud Conductor\nREACT_APP_IMG=./images/iff.png\nREACT_APP_TITLE=Cloud Conductor' > navigator-ui/.env"
+         
                     def commandSet = [
                         "cd .. && go build -o bin/tailwinds-lgen github.com/tailwinds/navigator/pkg/license",
                         "cd ../bin && ./tailwinds-lgen admin@tailwinds.ai 120",
@@ -49,7 +56,7 @@ pipeline {
                     ]
 
                     envUpdate(
-                        basePath: params.BASE_PATH,
+                        basePath: env.BASE_PATH,
                         commands: commandSet
                     )
                 }
