@@ -7,7 +7,7 @@ app:
 # Image configuration
 image:
   repository: samuvel/crud-app
-  tag: "staging-v1.0-24"
+  tag: "staging-v1.0-25"
   pullPolicy: IfNotPresent
 
 # Kubernetes deployment configuration
