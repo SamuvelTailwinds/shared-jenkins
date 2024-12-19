@@ -10,7 +10,7 @@ pipeline {
         BASE_PATH                ='./navigator-manager/container_builds/'
         SONAR_CREDENTIAL         =''
         GIT_CREDENTIAL          =''
-        GIT_REPO_URLS           =''
+        GIT_REPO_URLS           ='' // Provide git repo URLs, separated by commas.
         GIT_BRANCH              ='main'
         RELEAS_GIT_REPO         =''
         SOURCE_PATH             =''
