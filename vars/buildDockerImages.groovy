@@ -32,7 +32,7 @@ def call(Map params) {
 
             // def buildArgsString = buildArgs.collect { "--build-arg ${it}" }.join(' ')
             sh "docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD"
-            sh "docker build -t ${fullImageName} -f ${contextPath}/${dockerfilePath} ${contextPath}"
+            sh "docker build -t ${fullImageName} -f ${contextPath}/${dockerfilePath} ."
 
         }
     }
