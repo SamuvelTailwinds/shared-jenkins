@@ -1,66 +1,111 @@
-import javax.mail.*
-import javax.mail.internet.*
-import javax.activation.*
-import java.util.Properties
+def call(Map params= [:]) {
+    // Ensure required parameters are provided
+    def smtpHost = params.smtpHost ?: error("SMTP host is required.")
+    def smtpPort = params.smtpPort ?: '587'
+    def emailTo = params.to ?: error("Recipient email address is required.")
+    def emailSubject = params.subject ?: "No Subject"
+    def emailBody = params.body ?: "No Content"
+    def emailAttachments = params.attachments ?: []
+    def credentialsId = params.credentialsId ?: error("Jenkins credentials ID is required.")
 
-/**
- * Sends an email with attachments using SMTP.
- *
- * @param params Map of email parameters:
- *        - smtpHost: SMTP server host
- *        - smtpPort: SMTP server port
- *        - username: SMTP username
- *        - password: SMTP password
- *        - to: Recipient email address (comma-separated for multiple)
- *        - from: Sender email address
- *        - subject: Email subject
- *        - body: Email body text
- *        - attachments: List of file paths to attach
- */
-def call(Map params) {
-    def props = new Properties()
-    props.put("mail.smtp.host", params.smtpHost)
-    props.put("mail.smtp.port", params.smtpPort)
-    props.put("mail.smtp.auth", "true")
-    props.put("mail.smtp.starttls.enable", "true")
+    // Retrieve Jenkins credentials
+    withCredentials([usernamePassword(credentialsId: credentialsId, usernameVariable: 'SMTP_USERNAME', passwordVariable: 'SMTP_PASSWORD')]) {
+        // Create environment variables for Java class
+        def envVars = [
+            "SMTP_HOST=${smtpHost}",
+            "SMTP_PORT=${smtpPort}",
+            "SMTP_USERNAME=${env.SMTP_USERNAME}",
+            "SMTP_PASSWORD=${env.SMTP_PASSWORD}",
+            "EMAIL_TO=${emailTo}",
+            "EMAIL_SUBJECT=${emailSubject}",
+            "EMAIL_BODY=${emailBody}",
+            "EMAIL_ATTACHMENTS=${emailAttachments.join(',')}"
+        ].join(' ')
 
-    Session session = Session.getInstance(props, new Authenticator() {
-        protected PasswordAuthentication getPasswordAuthentication() {
-            return new PasswordAuthentication(params.username, params.password)
-        }
-    })
+        // Embed Java code as a string
+        def javaCode = '''
+            import javax.mail.*;
+            import javax.mail.internet.*;
+            import javax.activation.*;
+            import java.util.*;
+            import java.io.File;
 
-    try {
-        MimeMessage message = new MimeMessage(session)
-        message.setFrom(new InternetAddress(params.from))
-        message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(params.to))
-        message.setSubject(params.subject)
+            public class EmailSender {
+                public static void main(String[] params) {
+                    try {
+                        // Read environment variables
+                        String smtpHost = System.getenv("SMTP_HOST");
+                        String smtpPort = System.getenv("SMTP_PORT");
+                        String username = System.getenv("SMTP_USERNAME");
+                        String password = System.getenv("SMTP_PASSWORD");
+                        String from = System.getenv("EMAIL_FROM");
+                        String to = System.getenv("EMAIL_TO");
+                        String subject = System.getenv("EMAIL_SUBJECT");
+                        String body = System.getenv("EMAIL_BODY");
+                        String attachments = System.getenv("EMAIL_ATTACHMENTS");
 
-        // Email body
-        MimeBodyPart textPart = new MimeBodyPart()
-        textPart.setText(params.body, "utf-8")
+                        // Validate required parameters
+                        if (smtpHost == null || username == null || password == null || to == null) {
+                            System.err.println("Missing required parameters. Ensure all necessary environment variables are set.");
+                            System.exit(1);
+                        }
 
-        // Attachments
-        Multipart multipart = new MimeMultipart()
-        multipart.addBodyPart(textPart)
+                        // Configure SMTP properties
+                        Properties props = new Properties();
+                        props.put("mail.smtp.host", smtpHost);
+                        props.put("mail.smtp.port", smtpPort != null ? smtpPort : "587");
+                        props.put("mail.smtp.auth", "true");
+                        props.put("mail.smtp.starttls.enable", "true");
 
-        if (params.attachments) {
-            params.attachments.each { filePath ->
-                MimeBodyPart attachmentPart = new MimeBodyPart()
-                FileDataSource source = new FileDataSource(filePath)
-                attachmentPart.setDataHandler(new DataHandler(source))
-                attachmentPart.setFileName(new File(filePath).getName())
-                multipart.addBodyPart(attachmentPart)
+                        // Authenticate with SMTP server
+                        Session session = Session.getInstance(props, new Authenticator() {
+                            protected PasswordAuthentication getPasswordAuthentication() {
+                                return new PasswordAuthentication(username, password);
+                            }
+                        });
+
+                        // Create the email message
+                        MimeMessage message = new MimeMessage(session);
+                        message.setFrom(new InternetAddress(from != null ? from : username));
+                        message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(to));
+                        message.setSubject(subject != null ? subject : "No Subject");
+
+                        // Add email body
+                        MimeBodyPart textBodyPart = new MimeBodyPart();
+                        textBodyPart.setText(body != null ? body : "No Content");
+
+                        // Add attachments
+                        Multipart multipart = new MimeMultipart();
+                        multipart.addBodyPart(textBodyPart);
+
+                        if (attachments != null && !attachments.isEmpty()) {
+                            for (String filePath : attachments.split(",")) {
+                                MimeBodyPart attachmentPart = new MimeBodyPart();
+                                attachmentPart.attachFile(filePath.trim());
+                                multipart.addBodyPart(attachmentPart);
+                            }
+                        }
+
+                        message.setContent(multipart);
+
+                        // Send email
+                        Transport.send(message);
+                        System.out.println("Email sent successfully.");
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        System.exit(1);
+                    }
+                }
             }
-        }
+        '''
 
-        message.setContent(multipart)
+        // Write the Java code to a file in workspace
+        writeFile file: 'EmailSender.java', text: javaCode
 
-        // Send email
-        Transport.send(message)
-        println "Email sent successfully to ${params.to}"
-    } catch (MessagingException e) {
-        println "Failed to send email: ${e.message}"
-        throw e
+        // Compile and execute the Java code
+        sh """
+            javac EmailSender.java
+            ${envVars} java EmailSender
+        """
     }
 }
