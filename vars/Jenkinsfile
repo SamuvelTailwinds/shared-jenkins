@@ -29,7 +29,9 @@ pipeline {
         CONTEXT_PATH_01         ='.'
         CONTEXT_PATH_02         ='.'
         CONTEXT_PATH_03         ='.' 
-        DOCKERFILE_PATH_01      =''   
+        DOCKERFILE_PATH_01      ='Dcokerfile'   
+        DOCKERFILE_PATH_02      ='Dcokerfile'   
+        DOCKERFILE_PATH_03      ='Dcokerfile'   
         }
     stages {
         stage('Clone Repositories') {
@@ -78,9 +80,9 @@ pipeline {
             steps {
                 script {
                     def imageDefinitions = [
-                        [dockerRegistry: env.DOCKER_REGISTRY, imageName: env.SERVICE_01, imageTag: env.DOCKER_IMAGE_TAG_1, contextPath: env.CONTEXT_PATH_01, dockerfilePath: 'Dockerfile'],
-                        [dockerRegistry: env.DOCKER_REGISTRY, imageName: env.SERVICE_02, imageTag: env.DOCKER_IMAGE_TAG_1, contextPath: env.CONTEXT_PATH_02, dockerfilePath: 'Dockerfile'],
-                        [dockerRegistry: env.DOCKER_REGISTRY, imageName: env.SERVICE_03, imageTag: env.DOCKER_IMAGE_TAG_1, contextPath: env.CONTEXT_PATH_03, dockerfilePath: 'Dockerfile'],
+                        [dockerRegistry: env.DOCKER_REGISTRY, imageName: env.SERVICE_01, imageTag: env.DOCKER_IMAGE_TAG_1, contextPath: env.CONTEXT_PATH_01, dockerfilePath: env.DOCKERFILE_PATH_01],
+                        [dockerRegistry: env.DOCKER_REGISTRY, imageName: env.SERVICE_02, imageTag: env.DOCKER_IMAGE_TAG_1, contextPath: env.CONTEXT_PATH_02, dockerfilePath: env.DOCKERFILE_PATH_02],
+                        [dockerRegistry: env.DOCKER_REGISTRY, imageName: env.SERVICE_03, imageTag: env.DOCKER_IMAGE_TAG_1, contextPath: env.CONTEXT_PATH_03, dockerfilePath: env.DOCKERFILE_PATH_03],
                     ]
                     
                     buildDockerImages([
