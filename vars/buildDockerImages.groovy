@@ -19,7 +19,7 @@ def call(Map params) {
             def baseImageName = definition.imageName
             def IMAGE_TAG = definition.imageTag
             def contextPath = definition.contextPath
-            def dockerfilePath = definition.get('dockerfilePath', 'Dockerfile')
+            def dockerfilePath = definition.dockerfilePath :? 'Dockerfile'
 
             if (!baseImageName || !contextPath) {
                 error "Each image definition must have 'imageName' and 'contextPath'."
