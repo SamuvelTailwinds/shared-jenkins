@@ -26,9 +26,10 @@ pipeline {
         SERVICE_01              =''
         SERVICE_02              =''
         SERVICE_03              =''
-        CONTEXT_PATH_01         =''
-        CONTEXT_PATH_02         =''
-        CONTEXT_PATH_03         =''    
+        CONTEXT_PATH_01         ='.'
+        CONTEXT_PATH_02         ='.'
+        CONTEXT_PATH_03         ='.' 
+        DOCKERFILE_PATH_01      =''   
         }
     stages {
         stage('Clone Repositories') {
