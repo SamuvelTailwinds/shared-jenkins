@@ -14,6 +14,7 @@ def call(Map params) {
         usernameVariable: 'DOCKER_USERNAME',
         passwordVariable: 'DOCKER_PASSWORD'
     )]) {
+        sh "docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD"
         imageDefinitions.each { definition ->
             def dockerRegistry = definition.dockerRegistry
             def baseImageName = definition.imageName
@@ -31,7 +32,7 @@ def call(Map params) {
             echo "Building image: ${fullImageName} from context: ${contextPath} with Dockerfile: ${dockerfilePath}"
 
             // def buildArgsString = buildArgs.collect { "--build-arg ${it}" }.join(' ')
-            sh "docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD"
+            // sh "docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD"
             sh "docker build -f ${dockerfilePath} -t ${fullImageName} ${contextPath}"
 
             echo " ${fullImageName} Image Build is ready"
