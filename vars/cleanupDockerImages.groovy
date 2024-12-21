@@ -1,15 +1,15 @@
 def call(Map params = [:]) {
-    boolean cleanupImages = params.get('cleanupImages', false)
+    boolean cleanupImages = params.get('cleanupImages', true)
 
     // Only proceed with cleanup if the flag is true
     if (cleanupImages) {
         try {
             println "Docker image cleanup started..."
             // Remove unused images (dangling images)
-            sh 'docker image prune -f'
+            // sh 'docker image prune -f'
 
             // Optionally, remove all images (use with caution)
-            // sh 'docker image rm $(docker images -aq) --force'
+            sh 'docker image rm $(docker images -aq) --force'
 
             println "Docker image cleanup completed."
         } catch (Exception e) {

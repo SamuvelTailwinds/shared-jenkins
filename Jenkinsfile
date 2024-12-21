@@ -43,6 +43,7 @@ pipeline {
         stage('Clone Repositories') {
             steps {
                 script {
+                    echo '==========Checking out code from repository...=========='
                     cloneMultipleRepos(envVariable: env.GIT_REPO_URLS, branch: env.GIT_BRANCH, credentialsId: env.GIT_CREDENTIAL, depth: 1)
                 }
             }
@@ -50,6 +51,7 @@ pipeline {
         stage('.env Update') {
             steps {
                 script {
+                    echo '==========.env file update for nginx image and bin file creations...=========='
                     // Add .env file updates based on TARGET_CUSTOMER
                     if ('IFF' == 'Tailwinds') {
                         sh"echo '# Tailwinds\nREACT_APP_MAJORDOMO=Majordomo\nREACT_APP_IMG=./images/taiwindicon.png\nREACT_APP_TITLE=Tailwinds' > navigator-ui/.env"
@@ -74,6 +76,7 @@ pipeline {
         stage('SonarQube Analysis') {
             steps {
                 script {
+                    echo '==========Running SonarQube Analysis...=========='
                     scanWithSonarQube(
                         envVariable: env.GIT_REPO_URLS,
                         credentialsId: env.SONAR_CREDENTIAL,
@@ -84,7 +87,8 @@ pipeline {
         }
         stage('Build Docker Images') {
             steps {
-                script {                    
+                script {  
+                    echo '==============Starting the build process...================='                  
                     buildDockerImages([
                         imageDefinitions: imageDefinitions,
                         registryCredentialsId: env.DOCKER_CREDENTIALS

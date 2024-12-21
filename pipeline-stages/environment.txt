@@ -1,0 +1,31 @@
+    environment {
+        EMAIL_CREDENTIALS_ID     = '' 
+        EMAIL_RECIPIENTS         = 'your-email.com'           
+        SMTP_HOST                = 'smtp.gmail.com'                 // SMTP host (e.g., Gmail: smtp.gmail.com)
+        SMTP_PORT                = '465'                              // SMTP port (587 for TLS, 465 for SSL)
+        BASE_PATH                ='./navigator-manager/container_builds/'
+        SONAR_CREDENTIAL         =''
+        GIT_CREDENTIAL          =''
+        GIT_REPO_URLS           ='' // Provide git repo URLs, separated by commas.
+        GIT_BRANCH              ='main'
+        RELEAS_GIT_REPO         =''
+        SOURCE_PATH             =''
+        ARTIFACT_NAME           =''
+        TARGET_HOST             =''
+        VM_CREDENTIALS_ID       =''
+        ARTIFACT_PATH           =''
+        DOCKER_CREDENTIALS      =''
+        DOCKER_REGISTRY         =''
+        DOCKER_IMAGE_TAG_1      =''
+        DOCKER_IMAGE_TAG_2      =''
+        CLEANUP_DOCKER_IMAGES   =true //True will remove the docker images in post declarations.
+        SERVICE_01              =''
+        SERVICE_02              =''
+        SERVICE_03              =''
+        CONTEXT_PATH_01         ='.'
+        CONTEXT_PATH_02         ='.'
+        CONTEXT_PATH_03         ='.' 
+        DOCKERFILE_PATH_01      ='Dcokerfile'   
+        DOCKERFILE_PATH_02      ='Dcokerfile'   
+        DOCKERFILE_PATH_03      ='Dcokerfile'   
+        }
