@@ -23,22 +23,16 @@ pipeline {
         DOCKER_IMAGE_TAG_1      =''
         DOCKER_IMAGE_TAG_2      =''
         CLEANUP_DOCKER_IMAGES   =true //True will remove the docker images in post declarations.
-        // SERVICE_01              =''
-        // SERVICE_02              =''
-        // SERVICE_03              =''
-        // CONTEXT_PATH_01         ='.'
-        // CONTEXT_PATH_02         ='.'
-        // CONTEXT_PATH_03         ='.' 
-        // DOCKERFILE_PATH_01      ='Dcokerfile'   
-        // DOCKERFILE_PATH_02      ='Dcokerfile'   
-        // DOCKERFILE_PATH_03      ='Dcokerfile'   
+        SERVICE_01              =''
+        SERVICE_02              =''
+        SERVICE_03              =''
+        CONTEXT_PATH_01         ='.'
+        CONTEXT_PATH_02         ='.'
+        CONTEXT_PATH_03         ='.' 
+        DOCKERFILE_PATH_01      ='Dcokerfile'   
+        DOCKERFILE_PATH_02      ='Dcokerfile'   
+        DOCKERFILE_PATH_03      ='Dcokerfile'   
         }
-    def imageDefinitions = [
-        [dockerRegistry: env.DOCKER_REGISTRY, imageName: env.SERVICE_01, imageTag: env.DOCKER_IMAGE_TAG_1, contextPath: env.CONTEXT_PATH_01, dockerfilePath: env.DOCKERFILE_PATH_01],
-        [dockerRegistry: env.DOCKER_REGISTRY, imageName: env.SERVICE_02, imageTag: env.DOCKER_IMAGE_TAG_1, contextPath: env.CONTEXT_PATH_02, dockerfilePath: env.DOCKERFILE_PATH_02],
-        [dockerRegistry: env.DOCKER_REGISTRY, imageName: env.SERVICE_03, imageTag: env.DOCKER_IMAGE_TAG_1, contextPath: env.CONTEXT_PATH_03, dockerfilePath: env.DOCKERFILE_PATH_03],
-    ]
-
     stages {
         stage('Clone Repositories') {
             steps {
@@ -59,11 +53,11 @@ pipeline {
                         sh"echo '# IFF\nREACT_APP_MAJORDOMO=Cloud Conductor\nREACT_APP_IMG=./images/iff.png\nREACT_APP_TITLE=Cloud Conductor' > navigator-ui/.env"
                     }
                     def commandSet = [
-                        "cd ../../navigator-ui && npm i --force"
-                        "cd ../../navigator-ui && npm run build --force"
-                        "cp -r ../../navigator-ui/dist dist"
-                        "cp -r ../../navigator-ui/nginx nginx"
-                        // "rm -rf dist nginx"
+                        "cd ../../navigator-ui && npm i --force",
+                        "cd ../../navigator-ui && npm run build --force",
+                        "cp -r ../../navigator-ui/dist dist",
+                        "cp -r ../../navigator-ui/nginx nginx",
+                        // "rm -rf dist nginx",
                         "cd .. && go build -o bin/tailwinds-lgen github.com/tailwinds/navigator/pkg/license",
                         "cd ../bin && ./tailwinds-lgen admin@tailwinds.ai 120",
                         "cd .. && go build -o bin/navigator-manager github.com/tailwinds/navigator/cmd/startup",
@@ -93,7 +87,13 @@ pipeline {
         stage('Build Docker Images') {
             steps {
                 script {  
-                    echo '==============Starting the build process...================='                  
+                    echo '==============Starting the build process...=================' 
+                    imageDefinitions = [
+                        [dockerRegistry: env.DOCKER_REGISTRY, imageName: env.SERVICE_01, imageTag: env.DOCKER_IMAGE_TAG_1, contextPath: env.CONTEXT_PATH_01, dockerfilePath: env.DOCKERFILE_PATH_01],
+                        [dockerRegistry: env.DOCKER_REGISTRY, imageName: env.SERVICE_02, imageTag: env.DOCKER_IMAGE_TAG_1, contextPath: env.CONTEXT_PATH_02, dockerfilePath: env.DOCKERFILE_PATH_02],
+                        [dockerRegistry: env.DOCKER_REGISTRY, imageName: env.SERVICE_03, imageTag: env.DOCKER_IMAGE_TAG_1, contextPath: env.CONTEXT_PATH_03, dockerfilePath: env.DOCKERFILE_PATH_03],
+                    ]
+                                
                     buildDockerImages([
                         imageDefinitions: imageDefinitions,
                         registryCredentialsId: env.DOCKER_CREDENTIALS
