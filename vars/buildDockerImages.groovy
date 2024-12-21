@@ -29,13 +29,13 @@ def call(Map params) {
             def tag = "${IMAGE_TAG ?: 'latest'}"
             def fullImageName = "${dockerRegistry}/${baseImageName}:${tag}"
 
-            echo "Building image: ${fullImageName} from context: ${contextPath} with Dockerfile: ${dockerfilePath}"
+            echo "Building image: ${baseImageName}:${tag} from context: ${contextPath} with Dockerfile: ${dockerfilePath}"
 
             // def buildArgsString = buildArgs.collect { "--build-arg ${it}" }.join(' ')
             // sh "docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD"
             sh "docker build -f ${dockerfilePath} -t ${fullImageName} ${contextPath}"
 
-            echo " ${fullImageName} Image Build is ready"
+            echo " ${baseImageName}:${tag} Image Build is ready"
 
         }
     }
