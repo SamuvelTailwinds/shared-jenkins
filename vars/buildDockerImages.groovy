@@ -34,6 +34,8 @@ def call(Map params) {
             sh "docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD"
             sh "docker build -f ${dockerfilePath} -t ${fullImageName} ${contextPath}"
 
+            echo " ${fullImageName} Image Build is ready"
+
         }
     }
 }

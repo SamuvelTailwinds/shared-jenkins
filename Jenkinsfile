@@ -7,7 +7,7 @@ pipeline {
         EMAIL_RECIPIENTS         = ''           
         SMTP_HOST                = 'smtp.gmail.com'                 // SMTP host (e.g., Gmail: smtp.gmail.com)
         SMTP_PORT                = '465'                              // SMTP port (587 for TLS, 465 for SSL)
-        BASE_PATH                ='./navigator-manager/container_builds/' // Base path for where should env commands run
+        BASE_PATH                ='./navigator-manager/container_builds/'
         SONAR_CREDENTIAL         =''
         GIT_CREDENTIAL          =''
         GIT_REPO_URLS           ='' // Provide git repo URLs, separated by commas.
@@ -23,16 +23,22 @@ pipeline {
         DOCKER_IMAGE_TAG_1      =''
         DOCKER_IMAGE_TAG_2      =''
         CLEANUP_DOCKER_IMAGES   =true //True will remove the docker images in post declarations.
-        SERVICE_01              =''
-        SERVICE_02              =''
-        SERVICE_03              =''
-        CONTEXT_PATH_01         ='.'
-        CONTEXT_PATH_02         ='.'
-        CONTEXT_PATH_03         ='.' 
-        DOCKERFILE_PATH_01      ='Dcokerfile'   
-        DOCKERFILE_PATH_02      ='Dcokerfile'   
-        DOCKERFILE_PATH_03      ='Dcokerfile'   
+        // SERVICE_01              =''
+        // SERVICE_02              =''
+        // SERVICE_03              =''
+        // CONTEXT_PATH_01         ='.'
+        // CONTEXT_PATH_02         ='.'
+        // CONTEXT_PATH_03         ='.' 
+        // DOCKERFILE_PATH_01      ='Dcokerfile'   
+        // DOCKERFILE_PATH_02      ='Dcokerfile'   
+        // DOCKERFILE_PATH_03      ='Dcokerfile'   
         }
+    def imageDefinitions = [
+        [dockerRegistry: env.DOCKER_REGISTRY, imageName: env.SERVICE_01, imageTag: env.DOCKER_IMAGE_TAG_1, contextPath: env.CONTEXT_PATH_01, dockerfilePath: env.DOCKERFILE_PATH_01],
+        [dockerRegistry: env.DOCKER_REGISTRY, imageName: env.SERVICE_02, imageTag: env.DOCKER_IMAGE_TAG_1, contextPath: env.CONTEXT_PATH_02, dockerfilePath: env.DOCKERFILE_PATH_02],
+        [dockerRegistry: env.DOCKER_REGISTRY, imageName: env.SERVICE_03, imageTag: env.DOCKER_IMAGE_TAG_1, contextPath: env.CONTEXT_PATH_03, dockerfilePath: env.DOCKERFILE_PATH_03],
+    ]
+
     stages {
         stage('Clone Repositories') {
             steps {
@@ -78,13 +84,7 @@ pipeline {
         }
         stage('Build Docker Images') {
             steps {
-                script {
-                    def imageDefinitions = [
-                        [dockerRegistry: env.DOCKER_REGISTRY, imageName: env.SERVICE_01, imageTag: env.DOCKER_IMAGE_TAG_1, contextPath: env.CONTEXT_PATH_01, dockerfilePath: env.DOCKERFILE_PATH_01],
-                        [dockerRegistry: env.DOCKER_REGISTRY, imageName: env.SERVICE_02, imageTag: env.DOCKER_IMAGE_TAG_1, contextPath: env.CONTEXT_PATH_02, dockerfilePath: env.DOCKERFILE_PATH_02],
-                        [dockerRegistry: env.DOCKER_REGISTRY, imageName: env.SERVICE_03, imageTag: env.DOCKER_IMAGE_TAG_1, contextPath: env.CONTEXT_PATH_03, dockerfilePath: env.DOCKERFILE_PATH_03],
-                    ]
-                    
+                script {                    
                     buildDockerImages([
                         imageDefinitions: imageDefinitions,
                         registryCredentialsId: env.DOCKER_CREDENTIALS
@@ -96,25 +96,15 @@ pipeline {
         stage('Trivy Scan') {
             steps {
                 script {
-                    def imageDefinitions = [
-                        [dockerRegistry: env.DOCKER_REGISTRY, imageName: env.SERVICE_01, imageTag: env.DOCKER_IMAGE_TAG_1, ],
-                        [dockerRegistry: env.DOCKER_REGISTRY, imageName: env.SERVICE_02, imageTag: env.DOCKER_IMAGE_TAG_1, ],
-                        [dockerRegistry: env.DOCKER_REGISTRY, imageName: env.SERVICE_03, imageTag: env.DOCKER_IMAGE_TAG_1, ],
-                    ]
-
-                    trivyImageScan(imageDefinitions: imageDefinitions, reportDir: 'trivy-reports')
+                    trivyImageScan(
+                        imageDefinitions: imageDefinitions, 
+                        reportDir: 'trivy-reports')
                 }
             }
         }
         stage('Push Docker Images') {
             steps {
-                script {
-                    def imageDefinitions = [
-                        [dockerRegistry: env.DOCKER_REGISTRY, imageName: env.SERVICE_01, imageTag: env.DOCKER_IMAGE_TAG_1, ],
-                        [dockerRegistry: env.DOCKER_REGISTRY, imageName: env.SERVICE_02, imageTag: env.DOCKER_IMAGE_TAG_1, ],
-                        [dockerRegistry: env.DOCKER_REGISTRY, imageName: env.SERVICE_03, imageTag: env.DOCKER_IMAGE_TAG_1, ],
-                    ]
-                    
+                script {                    
                     dockerImagesPush([
                         imageDefinitions: imageDefinitions,
                         registryCredentialsId: env.DOCKER_CREDENTIALS
