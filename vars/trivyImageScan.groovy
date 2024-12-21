@@ -30,7 +30,7 @@ def call(Map params = [:]) {
 
             // Run Trivy scan and save the report
             sh """
-                trivy image --format json --output ${reportFile} ${fullImageName}
+                trivy --debug image --cache-dir /tmp/trivy-cache --format json --output ${reportFile} ${fullImageName}
             """
 
             println "Trivy scan completed for ${baseImageName}. Report saved as ${reportFile}."
