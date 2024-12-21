@@ -59,6 +59,11 @@ pipeline {
                         sh"echo '# IFF\nREACT_APP_MAJORDOMO=Cloud Conductor\nREACT_APP_IMG=./images/iff.png\nREACT_APP_TITLE=Cloud Conductor' > navigator-ui/.env"
                     }
                     def commandSet = [
+                        "cd ../../navigator-ui && npm i --force"
+                        "cd ../../navigator-ui && npm run build --force"
+                        "cp -r ../../navigator-ui/dist dist"
+                        "cp -r ../../navigator-ui/nginx nginx"
+                        // "rm -rf dist nginx"
                         "cd .. && go build -o bin/tailwinds-lgen github.com/tailwinds/navigator/pkg/license",
                         "cd ../bin && ./tailwinds-lgen admin@tailwinds.ai 120",
                         "cd .. && go build -o bin/navigator-manager github.com/tailwinds/navigator/cmd/startup",

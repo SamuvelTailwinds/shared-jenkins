@@ -34,13 +34,14 @@ def call(Map params) {
                     -Dsonar.login=\${SONAR_AUTH_TOKEN}"
 
                 // Fetch the SonarQube report
-                def reportDir = "${env.WORKSPACE}/sonar-report"
+                def reportDir = "${env.WORKSPACE}/sonar-reports"
                 sh "mkdir -p ${reportDir}"
                 sh """
                     curl -s -u \${SONAR_AUTH_TOKEN}: \
                     "${sonarUrl}/api/issues/search?componentKeys=${sonarProjectKey}&severities=BLOCKER,CRITICAL,MAJOR,MINOR,INFO&s=SEVERITY&asc=false&ps=100" \
                     -o ${reportDir}/${repoName}.json
                 """
+                
             }
         }
     }
