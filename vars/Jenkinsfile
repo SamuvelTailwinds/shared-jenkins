@@ -3,6 +3,7 @@
 pipeline {
     agent any
     environment {
+        BUILD_TRIGGER_USER       =''
         EMAIL_CREDENTIALS_ID     = '' 
         EMAIL_RECIPIENTS         = ''           
         SMTP_HOST                = 'smtp.gmail.com'                 // SMTP host (e.g., Gmail: smtp.gmail.com)
@@ -171,11 +172,17 @@ pipeline {
             script {
                 archiveArtifacts artifacts: 'trivy-reports/*.json', allowEmptyArchive: true
                 archiveArtifacts artifacts: 'sonar-reports/*.json', allowEmptyArchive: true
-                sendEmailWithAttachment(
-                    recipients: 'team@example.com',
-                    subject: "Build #${env.BUILD_NUMBER} Status",
-                    body: """<p>The build has completed. Please find the attached reports.</p>""",
-                    attachments: ['reports/*.json']
+                sendEmailNotification(
+                    BUILD_STATUS: currentBuild.currentResult,
+                    BUILD_ID: env.BUILD_ID,
+                    BUILD_NUMBER: env.BUILD_NUMBER,
+                    BUILD_TRIGGER_USER: env.BUILD_TRIGGER_USER,
+                    COMMIT_ID: env.COMMIT_ID,
+                    BUILD_TIMESTAMP: new Date().format('yyyy-MM-dd HH:mm:ss'),
+                    RECIPIENT_EMAILS: env.EMAIL_RECIPIENTS,
+                    ATTACHMENTS_PATTERN: '*.zip',  
+                    credentialsId: env.EMAIL_CREDENTIALS_ID,
+                    JOB_NAME: env.JOB_NAME
                 )
                 cleanupDockerImages(cleanupImages: env.CLEANUP_DOCKER_IMAGES)
                 cleanWorkspace(excludePatterns: ['reports', 'logs'])

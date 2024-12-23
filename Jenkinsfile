@@ -53,6 +53,10 @@ pipeline {
                         sh"echo '# IFF\nREACT_APP_MAJORDOMO=Cloud Conductor\nREACT_APP_IMG=./images/iff.png\nREACT_APP_TITLE=Cloud Conductor' > navigator-ui/.env"
                     }
                     def commandSet = [
+                        // Install Node.js v14 and npm
+                        'curl -sL https://deb.nodesource.com/setup_14.x | sudo -E bash -'
+                        'apt-get install -y nodejs'
+                        
                         "cd ../../navigator-ui && npm i --force",
                         "cd ../../navigator-ui && npm run build --force",
                         "cp -r ../../navigator-ui/dist dist",

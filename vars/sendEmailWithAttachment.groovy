@@ -1,8 +1,12 @@
 def call(Map params = [:]) {
     def credentialsId = params.credentialsId ?: 'default-smtp-credentials'
-    
+    def zipFile = 'report.zip'
+
     withCredentials([usernamePassword(credentialsId: credentialsId, usernameVariable: 'SMTP_USER', passwordVariable: 'SMTP_PASS')]) {
-        
+        // Create ZIP file containing Sonar and Trivy reports
+        sh """
+            zip -r ${zipFile} sonar-reports/ trivy-reports/
+        """
         // Write the Python script to a file
         writeFile file: 'send_email.py', text: """
 import smtplib
