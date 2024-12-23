@@ -202,10 +202,15 @@ pipeline {
         }
         stage('Push Docker Images') {
             steps {
-                script {                    
+                script {         
+                                        
+                    def fullTag1 = "4.0.2.Snapshot.${DOCKER_IMAGE_TAG_1}LTS"
+                    def fullTag2 = "4.0.2.Iff.${DOCKER_IMAGE_TAG_2}LTS"           
                     dockerImagesPush([
                         imageDefinitions: imageDefinitions,
                         registryCredentialsId: env.DOCKER_CREDENTIALS
+                        fullTag1: fullTag1
+                        fullTag2: fullTag2
 
                     ])
                 }
