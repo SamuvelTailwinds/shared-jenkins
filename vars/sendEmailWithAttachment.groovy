@@ -6,6 +6,7 @@ def call(Map params = [:]) {
         // Create ZIP file containing Sonar and Trivy reports
         sh """
             zip -r ${zipFile} sonar-reports/ trivy-reports/
+            ls -l report.zip
         """
         // Write the Python script to a file
         writeFile file: 'send_email.py', text: """
@@ -33,11 +34,12 @@ COMMIT_ID = os.getenv("COMMIT_ID")
 JOB_NAME = os.getenv("JOB_NAME", "Jenkins Pipeline")
 
 # Create email content
-email_subject = f"Jenkins Pipeline Notification and Reports - {JOB_NAME} is {BUILD_STATUS}"
+email_subject = f"MajorDomo Build Releas Detailes and Reports - {JOB_NAME} is {BUILD_STATUS}"
 email_body = f\"\"\"
-Hello,
+Hello Team,
 
-The Jenkins pipeline {JOB_NAME} has completed with the following status: {BUILD_STATUS}.
+The Jenkins pipeline {JOB_NAME} has completed with the following status: {BUILD_STATUS} for MajorDomo Build Release.
+
 
 Build Details:
 Build ID: {BUILD_ID}
