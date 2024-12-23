@@ -51,6 +51,17 @@ pipeline {
                         sh"echo '# IFF\nREACT_APP_MAJORDOMO=Cloud Conductor\nREACT_APP_IMG=./images/iff.png\nREACT_APP_TITLE=Cloud Conductor' > navigator-ui/.env"
                     }
                     def commandSet = [
+                        // Install Node.js v14 and npm
+                        'curl -sL https://deb.nodesource.com/setup_14.x | sudo -E bash -',
+                        'sudo apt-get install -y nodejs',
+                        // npm install for ui                        
+                        "cd ../../navigator-ui && npm i --force",
+                        "cd ../../navigator-ui && npm run build --force",
+                        "cp -r ../../navigator-ui/dist dist",
+                        "cp -r ../../navigator-ui/nginx nginx",
+                        // "rm -rf dist nginx",
+
+                        // go bin creation for backend 
                         "cd .. && go build -o bin/tailwinds-lgen github.com/tailwinds/navigator/pkg/license",
                         "cd ../bin && ./tailwinds-lgen admin@tailwinds.ai 120",
                         "cd .. && go build -o bin/navigator-manager github.com/tailwinds/navigator/cmd/startup",
@@ -79,7 +90,7 @@ pipeline {
         stage('Build Docker Images') {
             steps {
                 script {
-                    def imageDefinitions = [
+                    imageDefinitions = [
                         [dockerRegistry: env.DOCKER_REGISTRY, imageName: env.SERVICE_01, imageTag: env.DOCKER_IMAGE_TAG_1, contextPath: env.CONTEXT_PATH_01, dockerfilePath: env.DOCKERFILE_PATH_01],
                         [dockerRegistry: env.DOCKER_REGISTRY, imageName: env.SERVICE_02, imageTag: env.DOCKER_IMAGE_TAG_1, contextPath: env.CONTEXT_PATH_02, dockerfilePath: env.DOCKERFILE_PATH_02],
                         [dockerRegistry: env.DOCKER_REGISTRY, imageName: env.SERVICE_03, imageTag: env.DOCKER_IMAGE_TAG_1, contextPath: env.CONTEXT_PATH_03, dockerfilePath: env.DOCKERFILE_PATH_03],
@@ -96,25 +107,15 @@ pipeline {
         stage('Trivy Scan') {
             steps {
                 script {
-                    def imageDefinitions = [
-                        [dockerRegistry: env.DOCKER_REGISTRY, imageName: env.SERVICE_01, imageTag: env.DOCKER_IMAGE_TAG_1, ],
-                        [dockerRegistry: env.DOCKER_REGISTRY, imageName: env.SERVICE_02, imageTag: env.DOCKER_IMAGE_TAG_1, ],
-                        [dockerRegistry: env.DOCKER_REGISTRY, imageName: env.SERVICE_03, imageTag: env.DOCKER_IMAGE_TAG_1, ],
-                    ]
-
-                    trivyImageScan(imageDefinitions: imageDefinitions, reportDir: 'trivy-reports')
+                    trivyImageScan(
+                        imageDefinitions: imageDefinitions, 
+                        reportDir: 'trivy-reports')
                 }
             }
         }
         stage('Push Docker Images') {
             steps {
-                script {
-                    def imageDefinitions = [
-                        [dockerRegistry: env.DOCKER_REGISTRY, imageName: env.SERVICE_01, imageTag: env.DOCKER_IMAGE_TAG_1, ],
-                        [dockerRegistry: env.DOCKER_REGISTRY, imageName: env.SERVICE_02, imageTag: env.DOCKER_IMAGE_TAG_1, ],
-                        [dockerRegistry: env.DOCKER_REGISTRY, imageName: env.SERVICE_03, imageTag: env.DOCKER_IMAGE_TAG_1, ],
-                    ]
-                    
+                script {                    
                     dockerImagesPush([
                         imageDefinitions: imageDefinitions,
                         registryCredentialsId: env.DOCKER_CREDENTIALS
@@ -134,7 +135,7 @@ pipeline {
                         sourcePath: env.SOURCE_PATH,
                         githubTokenId: env.GIT_CREDENTIAL,
                         releaseName: 'MajorDomo $DOCKER_IMAGE_TAG_1',
-                        releaseDescription: 'This is the release description'
+                        releaseDescription: 'This is the MajorDomo release for new features and bug fixes.'
                     )
                 }
             }
@@ -142,7 +143,13 @@ pipeline {
         stage('Deploy to vm') {
             steps {
                 script {
-                    deployToUbuntu(registryCredentialsId: env.DOCKER_CREDENTIALS, targetHost: env.TARGET_HOST, vmCredentials: env.VM_CREDENTIALS_ID, artifactPath: env.ARTIFACT_PATH, releaseTag: env.DOCKER_IMAGE_TAG_1)
+                    deployToUbuntu(
+                        registryCredentialsId: env.DOCKER_CREDENTIALS, 
+                        targetHost: env.TARGET_HOST, 
+                        vmCredentials: env.VM_CREDENTIALS_ID, 
+                        artifactPath: env.ARTIFACT_PATH, 
+                        releaseTag: env.DOCKER_IMAGE_TAG_1
+                    )
                 }
             }
         }
@@ -163,6 +170,7 @@ pipeline {
         always {
             script {
                 archiveArtifacts artifacts: 'trivy-reports/*.json', allowEmptyArchive: true
+                archiveArtifacts artifacts: 'sonar-reports/*.json', allowEmptyArchive: true
                 sendEmailWithAttachment(
                     recipients: 'team@example.com',
                     subject: "Build #${env.BUILD_NUMBER} Status",
