@@ -4,7 +4,7 @@ def call(Map params = [:]) {
     def seleniumPassword = params.seleniumPassword
     def gitRepoURL = params.gitRepoURL
     def gitCredentialsId = params.gitCredentialsId
-    def branch      = .params.gitBranch
+    def branch      = params.gitBranch
     def selectedFiles = params.selectedFiles ?: ''
 
     if (!seleniumHost || !seleniumUser || !seleniumPassword || !gitRepoURL || !gitCredentialsId) {
