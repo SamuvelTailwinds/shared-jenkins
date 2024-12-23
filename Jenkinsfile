@@ -2,6 +2,10 @@
 
 pipeline {
     agent any
+    parameters {
+        choice(name: 'BUILD_TYPE'choices: ['All', 'Infra Services', 'MD Services', 'Monitoring Services', 'IAM Services', 'Base Image'], description: 'Select the type of build to run')
+        string(name: 'BUILD_TRIGGER_USER', defaultValue: '', description: 'Name of the user triggering the build')
+    }
     environment {
         EMAIL_CREDENTIALS_ID     = '' 
         EMAIL_RECIPIENTS         = ''           
@@ -88,16 +92,97 @@ pipeline {
                 }
             }
         }
-        stage('Build Docker Images') {
+        stage('Build: MD Services') {
+            when {
+                expression { return params.BUILD_TYPE == 'MD Services' || params.BUILD_TYPE == 'All' }
+            }
             steps {
-                script {  
-                    echo '==============Starting the build process...=================' 
+                script {
                     imageDefinitions = [
                         [dockerRegistry: env.DOCKER_REGISTRY, imageName: env.SERVICE_01, imageTag: env.DOCKER_IMAGE_TAG_1, contextPath: env.CONTEXT_PATH_01, dockerfilePath: env.DOCKERFILE_PATH_01],
                         [dockerRegistry: env.DOCKER_REGISTRY, imageName: env.SERVICE_02, imageTag: env.DOCKER_IMAGE_TAG_1, contextPath: env.CONTEXT_PATH_02, dockerfilePath: env.DOCKERFILE_PATH_02],
                         [dockerRegistry: env.DOCKER_REGISTRY, imageName: env.SERVICE_03, imageTag: env.DOCKER_IMAGE_TAG_1, contextPath: env.CONTEXT_PATH_03, dockerfilePath: env.DOCKERFILE_PATH_03],
                     ]
-                                
+                    
+                    buildDockerImages([
+                        imageDefinitions: imageDefinitions,
+                        registryCredentialsId: env.DOCKER_CREDENTIALS
+
+                    ])
+                }
+            }
+        }
+        stage('Build: Monitoring Services') {
+            when {
+                expression { return params.BUILD_TYPE == 'Monitoring Services' || params.BUILD_TYPE == 'All' }
+            }
+            steps {
+                script {
+                    imageDefinitions = [
+                        [dockerRegistry: env.DOCKER_REGISTRY, imageName: env.SERVICE_04, imageTag: env.DOCKER_IMAGE_TAG_1, contextPath: env.CONTEXT_PATH_04, dockerfilePath: env.DOCKERFILE_PATH_04],
+                        [dockerRegistry: env.DOCKER_REGISTRY, imageName: env.SERVICE_05, imageTag: env.DOCKER_IMAGE_TAG_1, contextPath: env.CONTEXT_PATH_05, dockerfilePath: env.DOCKERFILE_PATH_05],
+                        [dockerRegistry: env.DOCKER_REGISTRY, imageName: env.SERVICE_06, imageTag: env.DOCKER_IMAGE_TAG_1, contextPath: env.CONTEXT_PATH_06, dockerfilePath: env.DOCKERFILE_PATH_06],
+                    ]
+                    
+                    buildDockerImages([
+                        imageDefinitions: imageDefinitions,
+                        registryCredentialsId: env.DOCKER_CREDENTIALS
+
+                    ])
+                }
+            }
+        }
+        stage('Build: IAM Services') {
+            when {
+                expression { return params.BUILD_TYPE == 'IAM Services' || params.BUILD_TYPE == 'All' }
+            }
+            steps {
+                script {
+                    imageDefinitions = [
+                        [dockerRegistry: env.DOCKER_REGISTRY, imageName: env.SERVICE_07, imageTag: env.DOCKER_IMAGE_TAG_1, contextPath: env.CONTEXT_PATH_07, dockerfilePath: env.DOCKERFILE_PATH_07],
+                        [dockerRegistry: env.DOCKER_REGISTRY, imageName: env.SERVICE_08, imageTag: env.DOCKER_IMAGE_TAG_1, contextPath: env.CONTEXT_PATH_08, dockerfilePath: env.DOCKERFILE_PATH_08],
+                    ]
+                    
+                    buildDockerImages([
+                        imageDefinitions: imageDefinitions,
+                        registryCredentialsId: env.DOCKER_CREDENTIALS
+
+                    ])
+                }
+            }
+        }
+        stage('Build: Infra Services') {
+            when {
+                expression { return params.BUILD_TYPE == 'Infra Services' || params.BUILD_TYPE == 'All' }
+            }
+            steps {
+                script {
+                    imageDefinitions = [
+                        [dockerRegistry: env.DOCKER_REGISTRY, imageName: env.SERVICE_09, imageTag: env.DOCKER_IMAGE_TAG_1, contextPath: env.CONTEXT_PATH_09, dockerfilePath: env.DOCKERFILE_PATH_09],
+                        [dockerRegistry: env.DOCKER_REGISTRY, imageName: env.SERVICE_10, imageTag: env.DOCKER_IMAGE_TAG_1, contextPath: env.CONTEXT_PATH_10, dockerfilePath: env.DOCKERFILE_PATH_10],
+                        [dockerRegistry: env.DOCKER_REGISTRY, imageName: env.SERVICE_11, imageTag: env.DOCKER_IMAGE_TAG_1, contextPath: env.CONTEXT_PATH_11, dockerfilePath: env.DOCKERFILE_PATH_11],
+                        [dockerRegistry: env.DOCKER_REGISTRY, imageName: env.SERVICE_12, imageTag: env.DOCKER_IMAGE_TAG_1, contextPath: env.CONTEXT_PATH_12, dockerfilePath: env.DOCKERFILE_PATH_12],
+                        [dockerRegistry: env.DOCKER_REGISTRY, imageName: env.SERVICE_13, imageTag: env.DOCKER_IMAGE_TAG_1, contextPath: env.CONTEXT_PATH_13, dockerfilePath: env.DOCKERFILE_PATH_13],
+                    ]
+                    
+                    buildDockerImages([
+                        imageDefinitions: imageDefinitions,
+                        registryCredentialsId: env.DOCKER_CREDENTIALS
+
+                    ])
+                }
+            }
+        }
+        stage('Build: Base Image') {
+            when {
+                expression { return params.BUILD_TYPE == 'Base Image'}
+            }
+            steps {
+                script {
+                    imageDefinitions = [
+                        [dockerRegistry: env.DOCKER_REGISTRY, imageName: env.SERVICE_14, imageTag: env.DOCKER_IMAGE_TAG_1, contextPath: env.CONTEXT_PATH_14, dockerfilePath: env.DOCKERFILE_PATH_14],
+                    ]
+                    
                     buildDockerImages([
                         imageDefinitions: imageDefinitions,
                         registryCredentialsId: env.DOCKER_CREDENTIALS
@@ -145,7 +230,13 @@ pipeline {
         stage('Deploy to vm') {
             steps {
                 script {
-                    deployToUbuntu(registryCredentialsId: env.DOCKER_CREDENTIALS, targetHost: env.TARGET_HOST, vmCredentials: env.VM_CREDENTIALS_ID, artifactPath: env.ARTIFACT_PATH, releaseTag: env.DOCKER_IMAGE_TAG_1)
+                    deployToUbuntu(
+                        registryCredentialsId: env.DOCKER_CREDENTIALS, 
+                        targetHost: env.TARGET_HOST, 
+                        vmCredentials: env.VM_CREDENTIALS_ID, 
+                        artifactPath: env.ARTIFACT_PATH, 
+                        releaseTag: env.DOCKER_IMAGE_TAG_1
+                    )
                 }
             }
         }
