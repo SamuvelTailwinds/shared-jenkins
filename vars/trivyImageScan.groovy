@@ -13,15 +13,14 @@ def call(Map params = [:]) {
             // Extract image definition details
             def dockerRegistry = definition.get('dockerRegistry', '')
             def baseImageName = definition.imageName
-            def imageTag = definition.get('imageTag', 'latest')
+            // def imageTag_1 = definition.get('imageTag', '')
 
             if (!baseImageName) {
                 error "Each image definition must have 'imageName'."
             }
 
             // Construct full image name
-            def fullImageName = "${dockerRegistry ? "${dockerRegistry}/" : ''}${baseImageName}:${imageTag}"
-
+            def fullImageName = "${dockerRegistry ? "${dockerRegistry}/" : ''}${baseImageName}:latest"
             // Generate report file name based on image name
             String sanitizedImageName = baseImageName.replaceAll(/[\/:]/, '_')
             String reportFile = "${reportDir}/${sanitizedImageName}-trivy-report.json"

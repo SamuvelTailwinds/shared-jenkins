@@ -18,7 +18,8 @@ def call(Map params) {
         imageDefinitions.each { definition ->
             def dockerRegistry = definition.dockerRegistry
             def baseImageName = definition.imageName
-            def IMAGE_TAG = definition.imageTag
+            // def IMAGE_TAG_1 = definition.imageTag_1
+            // def IMAGE_TAG_2 = definition.imageTag_2
             def contextPath = definition.contextPath
             def dockerfilePath = definition.dockerfilePath
 
@@ -26,10 +27,10 @@ def call(Map params) {
                 error "Each image definition must have 'imageName' and 'contextPath'."
             }
 
-            def tag = "${IMAGE_TAG ?: 'latest'}"
-            def fullImageName = "${dockerRegistry}/${baseImageName}:${tag}"
+            // def tag = "${IMAGE_TAG ?: 'latest'}"
+            def fullImageName = "${dockerRegistry}/${baseImageName}:latest"
 
-            echo "Building image: ${baseImageName}:${tag} from context: ${contextPath} with Dockerfile: ${dockerfilePath}"
+            echo "Building image: ${baseImageName}:latest from context: ${contextPath} with Dockerfile: ${dockerfilePath}"
 
             // def buildArgsString = buildArgs.collect { "--build-arg ${it}" }.join(' ')
             // sh "docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD"

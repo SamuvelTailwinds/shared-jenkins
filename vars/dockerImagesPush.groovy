@@ -14,25 +14,31 @@ def call(Map params) {
         usernameVariable: 'DOCKER_USERNAME',
         passwordVariable: 'DOCKER_PASSWORD'
     )]) {
+        sh "docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD"
         imageDefinitions.each { definition ->
             def dockerRegistry = definition.dockerRegistry
             def baseImageName = definition.imageName
-            def IMAGE_TAG = definition.imageTag
+            def IMAGE_TAG_1 = definition.imageTag_1
+            def IMAGE_TAG_2 = definition.imageTag_2
 
             if (!baseImageName) {
                 error "Each image definition must have 'imageName'."
             }
 
-            def tag = "${IMAGE_TAG ?: 'latest'}"
-            def fullImageName = "${dockerRegistry}/${baseImageName}:${tag}"
+            def fullImageName_1 = "${dockerRegistry}/${baseImageName}:${IMAGE_TAG_1}"
+            def fullImageName_2 = "${dockerRegistry}/${baseImageName}:${IMAGE_TAG_2}"
 
-            echo "Pushing image: ${fullImageName} to dockerhub"
 
             // def buildArgsString = buildArgs.collect { "--build-arg ${it}" }.join(' ')
-            sh "docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD"
+            echo "Tagging images: ${fullImageName_1} to dockerhub"
+            sh "docker tag ${dockerRegistry}/${baseImageName}:latest ${fullImageName_1}"
+            echo "Pushing image: ${fullImageName_1}"
+            sh "docker push ${fullImageName_1}"
 
-            echo "Pushing image: ${fullImageName}"
-            sh "docker push ${fullImageName}"
+            echo "Tagging images: ${fullImageName_2} to dockerhub"
+            sh "docker tag ${dockerRegistry}/${baseImageName}:latest ${fullImageName_2}"
+            echo "Pushing image: ${fullImageName_2}"
+            sh "docker push ${fullImageName_2}"
         }
     }
 }
