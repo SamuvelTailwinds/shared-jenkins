@@ -1,43 +1,45 @@
 def call(Map params) {
-    if (!params.containsKey('imageDefinitions') || !params.imageDefinitions) {
-        error "'imageDefinitions' parameter is required and should provide a list of image definitions."
+    if (!params.containsKey('imageName') || !params.imageName) {
+        error "'imageName' parameter is required and should specify the name of the Docker image."
     }
+
+    if (!params.containsKey('contextPath') || !params.contextPath) {
+        error "'contextPath' parameter is required and should specify the build context directory."
+    }
+
+    // if (!params.containsKey('dockerRegistry') || !params.dockerRegistry) {
+    //     error "'dockerRegistry' parameter is required and should specify the Docker registry."
+    // }
 
     if (!params.containsKey('registryCredentialsId') || !params.registryCredentialsId) {
         error "'registryCredentialsId' parameter is required and should specify the Jenkins credentials ID for the Docker registry."
     }
 
-    def imageDefinitions = params.imageDefinitions
+    def imageName = params.imageName
+    def contextPath = params.contextPath
+    def dockerfilePath = params.dockerfilePath ?: 'Dockerfile'
+    // def dockerRegistry = params.dockerRegistry
+    // def imageTag = params.imageTag ?: 'latest'
+
+    def fullImageName = "${imageName}:latest"
 
     withCredentials([usernamePassword(
         credentialsId: params.registryCredentialsId,
         usernameVariable: 'DOCKER_USERNAME',
         passwordVariable: 'DOCKER_PASSWORD'
     )]) {
+        // Login to Docker registry
         sh "docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD"
-        imageDefinitions.each { definition ->
-            def dockerRegistry = definition.dockerRegistry
-            def baseImageName = definition.imageName
-            // def IMAGE_TAG_1 = definition.imageTag_1
-            // def IMAGE_TAG_2 = definition.imageTag_2
-            def contextPath = definition.contextPath
-            def dockerfilePath = definition.dockerfilePath
 
-            if (!baseImageName || !contextPath) {
-                error "Each image definition must have 'imageName' and 'contextPath'."
-            }
+        // Build the Docker image
+        echo "Building image: ${fullImageName} from context: ${contextPath} with Dockerfile: ${dockerfilePath}"
+        sh "docker build -f ${dockerfilePath} -t ${fullImageName} ${contextPath}"
 
-            // def tag = "${IMAGE_TAG ?: 'latest'}"
-            def fullImageName = "${dockerRegistry}/${baseImageName}:latest"
-
-            echo "Building image: ${baseImageName}:latest from context: ${contextPath} with Dockerfile: ${dockerfilePath}"
-
-            // def buildArgsString = buildArgs.collect { "--build-arg ${it}" }.join(' ')
-            // sh "docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD"
-            sh "docker build -f ${dockerfilePath} -t ${fullImageName} ${contextPath}"
-
-            echo " ${baseImageName}:latest Image Build is ready"
-
-        }
+        echo "${fullImageName} Image Build is ready"
     }
+
+    return [
+        fullImageName: fullImageName,
+        registry: dockerRegistry
+    ]
 }
