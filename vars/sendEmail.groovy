@@ -4,7 +4,7 @@ def call(Map params = [:]) {
     def triggeredBy = currentBuild.getBuildCauses().find { it.shortDescription }?.shortDescription ?: 'Unknown'
     def buildTimestamp = new Date().format('yyyy-MM-dd HH:mm:ss')
     def failureCause = currentBuild.description ?: 'No specific failure cause provided.'
-    def recipientEmails = params.get('recipientEmails', '')
+    def recipientEmails = params.recipientEmails
     def credentialsId = params.credentialsId
 
     withCredentials([usernamePassword(credentialsId: credentialsId, usernameVariable: 'EMAIL_USER', passwordVariable: 'EMAIL_PASS')]) {
