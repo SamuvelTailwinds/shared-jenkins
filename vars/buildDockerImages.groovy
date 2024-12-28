@@ -40,6 +40,5 @@ def call(Map params) {
 
     return [
         fullImageName: fullImageName,
-        registry: dockerRegistry
     ]
 }
