@@ -4,12 +4,6 @@ def call(Map params = [:]) {
     def triggeredBy = currentBuild.getBuildCauses().find { it.shortDescription }?.shortDescription ?: 'Unknown'
     def buildTimestamp = new Date().format('yyyy-MM-dd HH:mm:ss')
     def failureCause = currentBuild.description ?: 'No specific failure cause provided.'
-    def stageStatuses = ''
-
-    currentBuild.rawBuild.getExecution().getStages().each { stage ->
-        stageStatuses += "${stage.name}: ${stage.status}\n"
-    }
-
     def recipientEmails = params.get('recipientEmails', '')
     def credentialsId = params.credentialsId
 
@@ -21,23 +15,17 @@ from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 import sys
 
-def send_email(sender_email, sender_password, build_number, build_status, triggered_by, timestamp, failure_cause, stage_statuses, recipient_emails):
+def send_email(sender_email, sender_password, build_number, build_status, triggered_by, timestamp, failure_cause, recipient_emails):
     subject = f"Pipeline Failed: Build #{build_number}"
-    body = f\"\"\"
-    <html>
-    <body>
+    body = f\"\"\"<html><body>
         <h2>Pipeline Failure Notification</h2>
         <p><strong>Build Number:</strong> {build_number}</p>
         <p><strong>Build Status:</strong> {build_status}</p>
         <p><strong>Triggered By:</strong> {triggered_by}</p>
         <p><strong>Timestamp:</strong> {timestamp}</p>
         <p><strong>Failure Cause:</strong> {failure_cause}</p>
-        <p><strong>Message:</strong> Check, the pipeline failed, so the release did not happen.</p>
-        <h3>Stage Statuses:</h3>
-        <pre>{stage_statuses}</pre>
-    </body>
-    </html>
-    \"\"\"
+        <p>Message: The pipeline failed, release did not occur.</p>
+    </body></html>\"\"\"
 
     msg = MIMEMultipart("alternative")
     msg["Subject"] = subject
@@ -56,18 +44,8 @@ def send_email(sender_email, sender_password, build_number, build_status, trigge
         print(f"Failed to send email: {e}")
 
 if __name__ == "__main__":
-    sender_email = sys.argv[1]
-    sender_password = sys.argv[2]
-    build_number = sys.argv[3]
-    build_status = sys.argv[4]
-    triggered_by = sys.argv[5]
-    timestamp = sys.argv[6]
-    failure_cause = sys.argv[7]
-    stage_statuses = sys.argv[8]
-    recipient_emails = sys.argv[9].split(",")
-    send_email(sender_email, sender_password, build_number, build_status, triggered_by, timestamp, failure_cause, stage_statuses, recipient_emails)
+    send_email(*sys.argv[1:])
 """
-
         writeFile file: 'send_email.py', text: pythonScript
 
         // Execute the Python script
@@ -80,7 +58,6 @@ if __name__ == "__main__":
             '${triggeredBy}' \\
             '${buildTimestamp}' \\
             '${failureCause}' \\
-            '${stageStatuses}' \\
             '${recipientEmails}'
         """
     }
