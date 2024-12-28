@@ -1,111 +1,87 @@
-def call(Map params= [:]) {
-    // Ensure required parameters are provided
-    def smtpHost = params.smtpHost ?: error("SMTP host is required.")
-    def smtpPort = params.smtpPort ?: '587'
-    def emailTo = params.to ?: error("Recipient email address is required.")
-    def emailSubject = params.subject ?: "No Subject"
-    def emailBody = params.body ?: "No Content"
-    def emailAttachments = params.attachments ?: []
-    def credentialsId = params.credentialsId ?: error("Jenkins credentials ID is required.")
+def call(Map params = [:]) {
+    def buildStatus = currentBuild.currentResult
+    def buildNumber = env.BUILD_NUMBER
+    def triggeredBy = currentBuild.getBuildCauses().find { it.shortDescription }?.shortDescription ?: 'Unknown'
+    def buildTimestamp = new Date().format('yyyy-MM-dd HH:mm:ss')
+    def failureCause = currentBuild.description ?: 'No specific failure cause provided.'
+    def stageStatuses = ''
 
-    // Retrieve Jenkins credentials
-    withCredentials([usernamePassword(credentialsId: credentialsId, usernameVariable: 'SMTP_USERNAME', passwordVariable: 'SMTP_PASSWORD')]) {
-        // Create environment variables for Java class
-        def envVars = [
-            "SMTP_HOST=${smtpHost}",
-            "SMTP_PORT=${smtpPort}",
-            "SMTP_USERNAME=${env.SMTP_USERNAME}",
-            "SMTP_PASSWORD=${env.SMTP_PASSWORD}",
-            "EMAIL_TO=${emailTo}",
-            "EMAIL_SUBJECT=${emailSubject}",
-            "EMAIL_BODY=${emailBody}",
-            "EMAIL_ATTACHMENTS=${emailAttachments.join(',')}"
-        ].join(' ')
+    currentBuild.rawBuild.getExecution().getStages().each { stage ->
+        stageStatuses += "${stage.name}: ${stage.status}\n"
+    }
 
-        // Embed Java code as a string
-        def javaCode = '''
-            import javax.mail.*;
-            import javax.mail.internet.*;
-            import javax.activation.*;
-            import java.util.*;
-            import java.io.File;
+    def recipientEmails = params.get('recipientEmails', '')
+    def credentialsId = params.credentialsId
 
-            public class EmailSender {
-                public static void main(String[] params) {
-                    try {
-                        // Read environment variables
-                        String smtpHost = System.getenv("SMTP_HOST");
-                        String smtpPort = System.getenv("SMTP_PORT");
-                        String username = System.getenv("SMTP_USERNAME");
-                        String password = System.getenv("SMTP_PASSWORD");
-                        String from = System.getenv("EMAIL_FROM");
-                        String to = System.getenv("EMAIL_TO");
-                        String subject = System.getenv("EMAIL_SUBJECT");
-                        String body = System.getenv("EMAIL_BODY");
-                        String attachments = System.getenv("EMAIL_ATTACHMENTS");
+    withCredentials([usernamePassword(credentialsId: credentialsId, usernameVariable: 'EMAIL_USER', passwordVariable: 'EMAIL_PASS')]) {
+        // Generate the Python script
+        def pythonScript = """
+import smtplib
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
+import sys
 
-                        // Validate required parameters
-                        if (smtpHost == null || username == null || password == null || to == null) {
-                            System.err.println("Missing required parameters. Ensure all necessary environment variables are set.");
-                            System.exit(1);
-                        }
+def send_email(sender_email, sender_password, build_number, build_status, triggered_by, timestamp, failure_cause, stage_statuses, recipient_emails):
+    subject = f"Pipeline Failed: Build #{build_number}"
+    body = f\"\"\"
+    <html>
+    <body>
+        <h2>Pipeline Failure Notification</h2>
+        <p><strong>Build Number:</strong> {build_number}</p>
+        <p><strong>Build Status:</strong> {build_status}</p>
+        <p><strong>Triggered By:</strong> {triggered_by}</p>
+        <p><strong>Timestamp:</strong> {timestamp}</p>
+        <p><strong>Failure Cause:</strong> {failure_cause}</p>
+        <p><strong>Message:</strong> Check, the pipeline failed, so the release did not happen.</p>
+        <h3>Stage Statuses:</h3>
+        <pre>{stage_statuses}</pre>
+    </body>
+    </html>
+    \"\"\"
 
-                        // Configure SMTP properties
-                        Properties props = new Properties();
-                        props.put("mail.smtp.host", smtpHost);
-                        props.put("mail.smtp.port", smtpPort != null ? smtpPort : "587");
-                        props.put("mail.smtp.auth", "true");
-                        props.put("mail.smtp.starttls.enable", "true");
+    msg = MIMEMultipart("alternative")
+    msg["Subject"] = subject
+    msg["From"] = sender_email
+    msg["To"] = ", ".join(recipient_emails)
 
-                        // Authenticate with SMTP server
-                        Session session = Session.getInstance(props, new Authenticator() {
-                            protected PasswordAuthentication getPasswordAuthentication() {
-                                return new PasswordAuthentication(username, password);
-                            }
-                        });
+    msg.attach(MIMEText(body, "html"))
 
-                        // Create the email message
-                        MimeMessage message = new MimeMessage(session);
-                        message.setFrom(new InternetAddress(from != null ? from : username));
-                        message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(to));
-                        message.setSubject(subject != null ? subject : "No Subject");
+    try:
+        with smtplib.SMTP("smtp.gmail.com", 587) as server:
+            server.starttls()
+            server.login(sender_email, sender_password)
+            server.sendmail(sender_email, recipient_emails, msg.as_string())
+            print("Email sent successfully.")
+    except Exception as e:
+        print(f"Failed to send email: {e}")
 
-                        // Add email body
-                        MimeBodyPart textBodyPart = new MimeBodyPart();
-                        textBodyPart.setText(body != null ? body : "No Content");
+if __name__ == "__main__":
+    sender_email = sys.argv[1]
+    sender_password = sys.argv[2]
+    build_number = sys.argv[3]
+    build_status = sys.argv[4]
+    triggered_by = sys.argv[5]
+    timestamp = sys.argv[6]
+    failure_cause = sys.argv[7]
+    stage_statuses = sys.argv[8]
+    recipient_emails = sys.argv[9].split(",")
+    send_email(sender_email, sender_password, build_number, build_status, triggered_by, timestamp, failure_cause, stage_statuses, recipient_emails)
+"""
 
-                        // Add attachments
-                        Multipart multipart = new MimeMultipart();
-                        multipart.addBodyPart(textBodyPart);
+        writeFile file: 'send_email.py', text: pythonScript
 
-                        if (attachments != null && !attachments.isEmpty()) {
-                            for (String filePath : attachments.split(",")) {
-                                MimeBodyPart attachmentPart = new MimeBodyPart();
-                                attachmentPart.attachFile(filePath.trim());
-                                multipart.addBodyPart(attachmentPart);
-                            }
-                        }
-
-                        message.setContent(multipart);
-
-                        // Send email
-                        Transport.send(message);
-                        System.out.println("Email sent successfully.");
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                        System.exit(1);
-                    }
-                }
-            }
-        '''
-
-        // Write the Java code to a file in workspace
-        writeFile file: 'EmailSender.java', text: javaCode
-
-        // Compile and execute the Java code
+        // Execute the Python script
         sh """
-            javac EmailSender.java
-            ${envVars} java EmailSender
+        python3 send_email.py \\
+            '${EMAIL_USER}' \\
+            '${EMAIL_PASS}' \\
+            '${buildNumber}' \\
+            '${buildStatus}' \\
+            '${triggeredBy}' \\
+            '${buildTimestamp}' \\
+            '${failureCause}' \\
+            '${stageStatuses}' \\
+            '${recipientEmails}'
         """
     }
 }
