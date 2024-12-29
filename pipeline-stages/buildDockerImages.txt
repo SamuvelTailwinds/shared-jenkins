@@ -1,0 +1,9 @@
+stage('Build Docker Images') {
+    steps {
+        script {
+            echo '==========Building docker images...=========='
+                def buildResult = buildDockerImages(imageName: env.SERVICE_01, contextPath: env.CONTEXT_PATH_01, dockerfilePath: env.DOCKERFILE_PATH_01, registryCredentialsId: env.DOCKER_CREDENTIALS)
+                echo "Built and Pushed Image: ${buildResult.fullImageName}"
+            }
+        }
+    }

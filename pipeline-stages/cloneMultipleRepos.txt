@@ -1,0 +1,8 @@
+stage('Clone Repositories') {
+    steps {
+        script {
+            echo '==========Checking out code from repository...=========='
+            cloneMultipleRepos(envVariable: env.GIT_REPO_URLS, branch: env.GIT_BRANCH, credentialsId: env.GIT_CREDENTIAL, depth: 1)
+        }
+    }
+}

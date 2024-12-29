@@ -1,0 +1,14 @@
+stage('Deploy to vm') {
+    steps {
+        script {
+            echo '==========Deploy majordomo to vm...=========='
+            deployToUbuntu(
+                registryCredentialsId: env.DOCKER_CREDENTIALS, 
+                targetHost: env.TARGET_HOST, 
+                vmCredentials: env.VM_CREDENTIALS_ID, 
+                artifactPath: env.ARTIFACT_PATH, 
+                releaseTag: env.DOCKER_IMAGE_TAG_1
+            )
+        }
+    }
+}

@@ -1,0 +1,13 @@
+stage('SonarQube Analysis') {
+    steps {
+        script {
+            echo '==========Running SonarQube Analysis...=========='
+            scanWithSonarQube(
+                envVariable: env.GIT_REPO_URLS,
+                credentialsId: env.SONAR_CREDENTIAL,
+                sonarProjectKeyPrefix: 'project-',
+                sonarHostUrl: env.SONAR_URL
+            )
+        }
+    }
+}

@@ -1,0 +1,8 @@
+stage('Docker Push') {
+    steps {
+        script {  
+            echo '==========Pushing docker images for Snapshot ...=========='
+            dockerImagesPush([imageName: env.SERVICE_01, contextPath: env.CONTEXT_PATH_01, dockerfilePath: env.DOCKERFILE_PATH_01, imageTag: env.DOCKER_IMAGE_TAG_1, dockerRegistry: env.DOCKER_REGISTRY, registryCredentialsId: env.DOCKER_CREDENTIALS])
+        }
+    }
+}

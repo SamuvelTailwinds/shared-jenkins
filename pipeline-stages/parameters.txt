@@ -1,0 +1,6 @@
+parameters {
+    // 'MD Services'(nginx,manager,sse), 'Infra Services'(), 'Monitoring'(Grafana,Promtail,), 'IAM Services'(IAM,Postgresql), 'Base Image'
+    choice(name: 'GIT_BRANCH', choices: ['main', 'development-testing'], description: 'Select the Git branch to build')
+    string(name: 'IMAGE_TAG', defaultValue: '', description: 'Provide Majordomo snapshot build image tag')
+    string(name: 'BUILD_TRIGGER_USER', defaultValue: '', description: 'Name of the user triggering the build')
+}

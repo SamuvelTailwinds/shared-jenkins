@@ -1,0 +1,8 @@
+stage('Trivy Scan') {
+    steps {
+        script {
+            echo '==========Scanning docker images using trivy tool...=========='
+                trivyImageScan(imageName: env.SERVICE_01, reportDir: 'trivy-reports')
+            }
+        }
+    }
