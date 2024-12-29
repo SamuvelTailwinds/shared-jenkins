@@ -26,8 +26,6 @@ pipeline {
         ARTIFACT_PATH           =''
         DOCKER_CREDENTIALS      =''
         DOCKER_REGISTRY         =''
-        DOCKER_IMAGE_TAG_1      =''
-        DOCKER_IMAGE_TAG_2      =''
         CLEANUP_DOCKER_IMAGES   =true //True will remove the docker images in post declarations.
         SERVICE_01              =''
         SERVICE_02              =''
@@ -83,6 +81,10 @@ pipeline {
                     echo '==========Building docker images...=========='
                         def buildResult = buildDockerImages(imageName: env.SERVICE_01, contextPath: env.CONTEXT_PATH_01, dockerfilePath: env.DOCKERFILE_PATH_01, registryCredentialsId: env.DOCKER_CREDENTIALS)
                         echo "Built and Pushed Image: ${buildResult.fullImageName}"
+                        buildResult = buildDockerImages(imageName: env.SERVICE_02, contextPath: env.CONTEXT_PATH_02, dockerfilePath: env.DOCKERFILE_PATH_02, registryCredentialsId: env.DOCKER_CREDENTIALS)
+                        echo "Built and Pushed Image: ${buildResult.fullImageName}"
+                        buildResult = buildDockerImages(imageName: env.SERVICE_03, contextPath: env.CONTEXT_PATH_03, dockerfilePath: env.DOCKERFILE_PATH_03, registryCredentialsId: env.DOCKER_CREDENTIALS)
+                        echo "Built and Pushed Image: ${buildResult.fullImageName}"
                     }
                 }
             }
@@ -91,6 +93,8 @@ pipeline {
                 script {
                     echo '==========Scanning docker images using trivy tool...=========='
                         trivyImageScan(imageName: env.SERVICE_01, reportDir: 'trivy-reports')
+                        trivyImageScan(imageName: env.SERVICE_02, reportDir: 'trivy-reports')
+                        trivyImageScan(imageName: env.SERVICE_03, reportDir: 'trivy-reports')
                     }
                 }
             }
@@ -98,7 +102,16 @@ pipeline {
             steps {
                 script {  
                     echo '==========Pushing docker images for Snapshot ...=========='
-                    dockerImagesPush([imageName: env.SERVICE_01, contextPath: env.CONTEXT_PATH_01, dockerfilePath: env.DOCKERFILE_PATH_01, imageTag: env.DOCKER_IMAGE_TAG_1, dockerRegistry: env.DOCKER_REGISTRY, registryCredentialsId: env.DOCKER_CREDENTIALS])
+                    if (params.IMAGE_TAG?.trim()) {
+                        DOCKER_IMAGE_TAG_1 = params.IMAGE_TAG
+                    } else {
+                        // Default tag values based on build number
+                        DOCKER_IMAGE_TAG_1 = "release.${BUILD_NUMBER}"
+                    }
+
+                    dockerImagesPush([imageName: env.SERVICE_01, contextPath: env.CONTEXT_PATH_01, dockerfilePath: env.DOCKERFILE_PATH_01, imageTag: DOCKER_IMAGE_TAG_1, dockerRegistry: env.DOCKER_REGISTRY, registryCredentialsId: env.DOCKER_CREDENTIALS])
+                    dockerImagesPush([imageName: env.SERVICE_02, contextPath: env.CONTEXT_PATH_02, dockerfilePath: env.DOCKERFILE_PATH_02, imageTag: DOCKER_IMAGE_TAG_2, dockerRegistry: env.DOCKER_REGISTRY, registryCredentialsId: env.DOCKER_CREDENTIALS])
+                    dockerImagesPush([imageName: env.SERVICE_03, contextPath: env.CONTEXT_PATH_03, dockerfilePath: env.DOCKERFILE_PATH_03, imageTag: DOCKER_IMAGE_TAG_3, dockerRegistry: env.DOCKER_REGISTRY, registryCredentialsId: env.DOCKER_CREDENTIALS])
                 }
             }
         }
